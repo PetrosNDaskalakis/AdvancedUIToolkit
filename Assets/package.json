@@ -1,0 +1,30 @@
+{
+  "name": "com.uicore.framework",
+  "version": "0.9.1",
+  "displayName": "UI Core",
+  "description": "Unified UI binding workspace, prefab factory, XML-documented source generation and customizable C# templates for Unity uGUI.",
+  "unity": "2022.3",
+  "keywords": [
+    "ugui",
+    "ui",
+    "autobinder",
+    "editor",
+    "prefab",
+    "ui-core"
+  ],
+  "dependencies": {
+    "com.unity.ugui": "1.0.0"
+  },
+  "samples": [
+    {
+      "displayName": "Weapon Panel Example",
+      "description": "Example source and instructions for binding a three-button uGUI panel.",
+      "path": "Samples~/WeaponPanel"
+    },
+    {
+      "displayName": "Code Generation Template",
+      "description": "Compilable ExampleScript.cs template with markers for documented generated bindings.",
+      "path": "Samples~/CodeGeneration"
+    }
+  ]
+}

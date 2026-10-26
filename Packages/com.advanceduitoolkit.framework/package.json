@@ -1,0 +1,40 @@
+{
+  "name": "com.advanceduitoolkit.framework",
+  "version": "1.0.0-rc.13",
+  "displayName": "Advanced UI Toolkit",
+  "description": "Portable Unity uGUI authoring framework: automatic typed component bindings, reusable prefab libraries, Undo-aware generation, and streamlined Binder/Factory tools.",
+  "unity": "2022.3",
+  "keywords": [
+    "ugui",
+    "ui",
+    "autobinder",
+    "editor",
+    "prefab",
+    "advanced-ui-toolkit"
+  ],
+  "dependencies": {
+    "com.unity.ugui": "1.0.0"
+  },
+  "samples": [
+    {
+      "displayName": "Weapon Panel — Buttons",
+      "description": "Beginner walkthrough for a three-button panel and typed bindings.",
+      "path": "Samples~/WeaponPanel"
+    },
+    {
+      "displayName": "Settings Panel — Controls",
+      "description": "Working sample for toggle, slider, input field, dropdown, and status text with managed events.",
+      "path": "Samples~/SettingsPanel"
+    },
+    {
+      "displayName": "Station Style Libraries",
+      "description": "Step-by-step guidance for reusable station-specific prefab style profiles and inheritance.",
+      "path": "Samples~/StationLibraries"
+    },
+    {
+      "displayName": "Code Generation Template",
+      "description": "Compilable C# example template with markers for documented generated bindings.",
+      "path": "Samples~/CodeGeneration"
+    }
+  ]
+}

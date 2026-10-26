@@ -1,0 +1,23 @@
+{
+  "name": "AdvancedUIToolkit.Tests.Editor",
+  "rootNamespace": "AdvancedUIToolkit.Tests",
+  "references": [
+    "AdvancedUIToolkit.Runtime",
+    "AdvancedUIToolkit.Editor",
+    "UnityEngine.UI"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "noEngineReferences": false
+}

@@ -1,0 +1,15 @@
+# If embedded inside a validation Unity project
+Library/
+Temp/
+Obj/
+Logs/
+UserSettings/
+.vs/
+.vscode/
+.idea/
+*.csproj
+*.sln
+*.user
+*.suo
+.DS_Store
+# Do NOT ignore *.meta files in Unity packages.

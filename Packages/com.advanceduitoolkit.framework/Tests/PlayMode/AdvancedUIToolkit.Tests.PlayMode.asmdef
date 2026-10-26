@@ -1,0 +1,15 @@
+{
+  "name": "AdvancedUIToolkit.Tests.PlayMode",
+  "rootNamespace": "AdvancedUIToolkit.Tests",
+  "references": ["AdvancedUIToolkit.Runtime", "UnityEngine.UI"],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "noEngineReferences": false
+}
