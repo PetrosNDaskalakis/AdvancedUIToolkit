@@ -137,7 +137,7 @@ Save a custom `SonarButton.prefab`, create a **Style Profile**, and register it 
 > *Add your image here:* `Documentation~/Images/06-style-profiles.png`  
 > Capture: two different Style Profiles or station designs using their own prefab controls.
 
-For a complete walkthrough, see the [Developer Handbook](Documentation~/DEVELOPER_HANDBOOK.md).
+For a complete walkthrough, see the [Developer Handbook](Packages/com.advanceduitoolkit.framework/Documentation~/DEVELOPER_HANDBOOK.md).
 
 ## Documentation
 
