@@ -8,14 +8,14 @@ Choose the shortest path for your task:
 | Learn the normal developer workflow | [Developer handbook](DEVELOPER_HANDBOOK.md) |
 | Use `UIBindingRoot`, `UIView`, and `UIEventScope` | [API reference](API_REFERENCE.md) |
 | Organize multiple station designs | [Style profiles](STYLE_PROFILES.md) |
-| Customize generated C# | [Custom code templates](CUSTOM_CODE_TEMPLATES.md) and [Preview](GENERATION_PREVIEW_096.md) |
+| Customize generated C# | [Custom code templates](CUSTOM_CODE_TEMPLATES.md) and [Preview](GENERATION_PREVIEW.md) |
 | Avoid unwanted recompilation | [Generation modes](GENERATION_MODES.md) |
 | Debug binding or prefab issues | [Troubleshooting](TROUBLESHOOTING.md) |
 | Understand ownership and implementation | [Architecture](ARCHITECTURE.md) and [Technical overview](TECHNICAL_OVERVIEW.md) |
-| Verify upgrades and benchmarks | [Test plan](TEST_PLAN.md) and [Performance](PERFORMANCE_AND_TESTING_097.md) |
+| Verify upgrades and benchmarks | [Test plan](TEST_PLAN.md) and [Performance](PERFORMANCE_AND_TESTING.md) |
 | Upgrade from an `Assets/` install | [Migration guide](MIGRATION_TO_ADVANCED_UI_TOOLKIT.md) |
-| Understand activation/pooling | [Lifecycle](LIFECYCLE_093.md) |
-| Check safe prefab generation | [Prefab safety](PREFAB_SAFETY_094.md) |
+| Understand activation/pooling | [Lifecycle](LIFECYCLE.md) |
+| Check safe prefab generation | [Prefab safety](PREFAB_SAFETY.md) |
 
 ## Importable samples
 
