@@ -143,13 +143,13 @@ For a complete walkthrough, see the [Developer Handbook](Documentation~/DEVELOPE
 
 | Guide | Contents |
 | --- | --- |
-| [Installation](Documentation~/INSTALLATION.md) | Requirements, UPM installation, upgrades, and initial verification |
-| [Developer Handbook](Documentation~/DEVELOPER_HANDBOOK.md) | Daily workflows, naming rules, prefabs, Style Profiles, generation modes, and templates |
-| [Architecture](Documentation~/ARCHITECTURE.md) | Framework modules, Editor/runtime separation, binding manifests, and data flow |
-| [Technical Overview](Documentation~/TECHNICAL_OVERVIEW.md) | Design decisions, generation pipeline, performance considerations, and limitations |
-| [API Reference](Documentation~/API_REFERENCE.md) | `UIBindingRoot`, `UIView<T>`, `UIEventScope`, Style Profiles, and examples |
-| [Troubleshooting](Documentation~/TROUBLESHOOTING.md) | Common compilation, generation, prefab, Undo/Redo, and Editor issues |
-| [Documentation Index](Documentation~/INDEX.md) | All guides in one place |
+| [Installation](Packages/com.advanceduitoolkit.framework/Documentation~/INSTALLATION.md) | Requirements, UPM installation, upgrades, and initial verification |
+| [Developer Handbook](Packages/com.advanceduitoolkit.framework/Documentation~/DEVELOPER_HANDBOOK.md) | Daily workflows, naming rules, prefabs, Style Profiles, generation modes, and templates |
+| [Architecture](Packages/com.advanceduitoolkit.framework/Documentation~/ARCHITECTURE.md) | Framework modules, Editor/runtime separation, binding manifests, and data flow |
+| [Technical Overview](Packages/com.advanceduitoolkit.framework/Documentation~/TECHNICAL_OVERVIEW.md) | Design decisions, generation pipeline, performance considerations, and limitations |
+| [API Reference](Packages/com.advanceduitoolkit.framework/Documentation~/API_REFERENCE.md) | `UIBindingRoot`, `UIView<T>`, `UIEventScope`, Style Profiles, and examples |
+| [Troubleshooting](Packages/com.advanceduitoolkit.framework/Documentation~/TROUBLESHOOTING.md) | Common compilation, generation, prefab, Undo/Redo, and Editor issues |
+| [Documentation Index](Packages/com.advanceduitoolkit.framework/Documentation~/INDEX.md) | All guides in one place |
 
 ## Important notes
 
