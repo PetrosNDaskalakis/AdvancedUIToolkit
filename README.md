@@ -1,3 +1,6 @@
+<img width="1254" height="1254" alt="Advanced UI Toolkit Logo" src="https://github.com/user-attachments/assets/f58cbf80-33c2-4e5e-be11-634c33630a8b" />
+
+
 [README.md](https://github.com/user-attachments/files/33971741/README.md)
 # Advanced UI Toolkit
 
