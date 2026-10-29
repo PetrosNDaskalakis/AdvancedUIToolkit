@@ -12,7 +12,7 @@ namespace AdvancedUIToolkit.Editor
     internal static class AdvancedUIToolkitNaming
     {
         /// <summary>Stores the type by prefix reference or configuration value.</summary>
-        internal static readonly Dictionary<string, Type> TypeByPrefix =
+        private static readonly Dictionary<string, Type> RegisteredTypes =
             new Dictionary<string, Type>(StringComparer.Ordinal)
             {
                 { "TXT", typeof(Text) },
@@ -28,6 +28,61 @@ namespace AdvancedUIToolkit.Editor
                 { "RT", typeof(RectTransform) },
                 { "PNL", typeof(RectTransform) }
             };
+
+        /// <summary>All known prefixes. Mutation is restricted to validated registrations.</summary>
+        internal static IReadOnlyDictionary<string, Type> TypeByPrefix => RegisteredTypes;
+
+        /// <summary>Incremented when an external Editor assembly registers a binding prefix.</summary>
+        internal static int RegistrationVersion { get; private set; }
+
+        /// <summary>Returns a snapshot that cannot alter the shared Binder registry.</summary>
+        internal static IReadOnlyDictionary<string, Type> GetSnapshot()
+        {
+            return new System.Collections.ObjectModel.ReadOnlyDictionary<string, Type>(
+                new Dictionary<string, Type>(RegisteredTypes, StringComparer.Ordinal));
+        }
+
+        /// <summary>Registers a runtime Component type without replacing built-in or existing prefixes.</summary>
+        /// <param name="prefix">Two to eight uppercase letters or digits, beginning with a letter.</param>
+        /// <param name="componentType">Public, nonabstract, nonnested Component subclass.</param>
+        /// <param name="error">Reason the registration cannot be accepted.</param>
+        /// <returns>True on new registration or an idempotent registration of the same type.</returns>
+        internal static bool TryRegister(string prefix, Type componentType, out string error)
+        {
+            error = null;
+            if (string.IsNullOrEmpty(prefix) || prefix.Length < 2 || prefix.Length > 8 ||
+                prefix[0] < 'A' || prefix[0] > 'Z')
+            {
+                error = "Prefix must start with A-Z and contain 2-8 uppercase letters/digits.";
+                return false;
+            }
+            foreach (char character in prefix)
+            {
+                if ((character < 'A' || character > 'Z') &&
+                    (character < '0' || character > '9'))
+                {
+                    error = "Prefix must contain uppercase ASCII letters or digits only.";
+                    return false;
+                }
+            }
+            if (componentType == null || !typeof(Component).IsAssignableFrom(componentType) ||
+                componentType.IsAbstract || componentType.IsGenericType || componentType.IsNested ||
+                !componentType.IsPublic || string.IsNullOrEmpty(componentType.FullName))
+            {
+                error = "Binding type must be a public, concrete, nonnested, nongeneric Unity Component.";
+                return false;
+            }
+            if (RegisteredTypes.TryGetValue(prefix, out Type existing))
+            {
+                if (existing == componentType) return true;
+                error = "Prefix '" + prefix + "' is already assigned to " + existing.FullName + ".";
+                return false;
+            }
+            RegisteredTypes.Add(prefix, componentType);
+            RegistrationVersion++;
+            AdvancedUIToolkitAutomationMonitor.Schedule();
+            return true;
+        }
 
         // Generated classes have an Initialize method, so a property with
         // this identifier would conflict with the required interface member.
@@ -107,6 +162,16 @@ namespace AdvancedUIToolkit.Editor
                 if (node.GetComponent<UIBindingRoot>() != null) return true;
             }
             return false;
+        }
+
+        /// <summary>Checks whether an object name would be scanned by Binder.</summary>
+        /// <param name="name">Proposed object name.</param>
+        /// <returns>True if it begins with a registered prefix followed by underscore.</returns>
+        internal static bool HasRecognizedPrefix(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return false;
+            int separator = name.IndexOf('_');
+            return separator > 0 && RegisteredTypes.ContainsKey(name.Substring(0, separator));
         }
 
         /// <summary>Determines whether reserved accessor name.</summary>

@@ -53,8 +53,43 @@ namespace AdvancedUIToolkit.Editor
         private static bool pending;
         /// <summary>Stores the next check reference or configuration value.</summary>
         private static double nextCheck;
-        /// <summary>Stores the processing reference or configuration value.</summary>
+        /// <summary>Stores whether the monitor is currently processing a scan.</summary>
         private static bool processing;
+        /// <summary>Counts active nested Editor integration authoring operations.</summary>
+        private static int suspensionDepth;
+
+        /// <summary>True while a hierarchy authoring transaction is active.</summary>
+        internal static bool IsSuspended => suspensionDepth > 0;
+        /// <summary>True while automation is executing a refresh or regeneration pass.</summary>
+        internal static bool IsProcessing => processing;
+
+        /// <summary>One owned suspension of background hierarchy checks.</summary>
+        private sealed class Suspension : IDisposable
+        {
+            /// <summary>Prevents double-release of the outer monitor scope.</summary>
+            private bool disposed;
+
+            /// <summary>Releases one suspension and schedules a deferred rescan.</summary>
+            public void Dispose()
+            {
+                if (disposed) return;
+                disposed = true;
+                suspensionDepth--;
+                if (suspensionDepth == 0)
+                    Schedule();
+            }
+        }
+
+        /// <summary>
+        /// Delays background automatic Binder work until the last caller releases its scope.
+        /// Nested scopes are supported. Must be disposed on the Unity Editor main thread.
+        /// </summary>
+        /// <returns>A disposable suspension of automation scans and writes.</returns>
+        internal static IDisposable Suspend()
+        {
+            suspensionDepth++;
+            return new Suspension();
+        }
 
         /// <summary>Notifies listeners when changed occurs.</summary>
         internal static event Action Changed;
@@ -155,10 +190,10 @@ namespace AdvancedUIToolkit.Editor
         /// <summary>Performs the update operation.</summary>
         private static void Update()
         {
-            if (!pending || EditorApplication.timeSinceStartup < nextCheck) return;
+            if (!pending || IsSuspended || EditorApplication.timeSinceStartup < nextCheck) return;
             // Never consume a scheduled Undo/Redo rescan while another generation
             // pass is still running. Leaving pending=true guarantees a later retry.
-            if (processing || EditorApplication.isPlayingOrWillChangePlaymode ||
+            if (processing || IsSuspended || EditorApplication.isPlayingOrWillChangePlaymode ||
                 EditorApplication.isCompiling || EditorApplication.isUpdating) return;
             pending = false;
             Refresh();
@@ -167,16 +202,16 @@ namespace AdvancedUIToolkit.Editor
         /// <summary>Refreshes value.</summary>
         internal static void Refresh()
         {
-            if (processing || EditorApplication.isPlayingOrWillChangePlaymode ||
+            if (processing || IsSuspended || EditorApplication.isPlayingOrWillChangePlaymode ||
                 EditorApplication.isCompiling || EditorApplication.isUpdating) return;
             processing = true;
             try
             {
                 Items.Clear();
                 // Automation does not traverse or edit closed scene assets or prefab assets.
-                foreach (var root in GetEditableRoots())
+                foreach (UIBindingRoot root in GetEditableRoots())
                 {
-                    var result = UIAutoBinderWindow.InspectForAutomation(root, false);
+                    UIAutoGenerationResult result = UIAutoBinderWindow.InspectForAutomation(root, false);
                     if (IsPending(result) && AutoGenerateEnabled)
                         result = UIAutoBinderWindow.InspectForAutomation(root, true);
                     Items.Add(new Item { Root = root, Result = result });
@@ -192,7 +227,7 @@ namespace AdvancedUIToolkit.Editor
         /// <summary>Generates one.</summary>
         internal static UIAutoGenerationResult GenerateOne(UIBindingRoot root)
         {
-            if (processing || EditorApplication.isPlayingOrWillChangePlaymode ||
+            if (processing || IsSuspended || EditorApplication.isPlayingOrWillChangePlaymode ||
                 EditorApplication.isCompiling || EditorApplication.isUpdating)
                 return new UIAutoGenerationResult(UIAutoGenerationStatus.Blocked,
                     "Unity is compiling, importing assets, or entering Play Mode.");
@@ -202,7 +237,7 @@ namespace AdvancedUIToolkit.Editor
                     preview.Message + "\n\nRemove these generated C# accessors now?",
                     "Remove Bindings", "Cancel"))
                 return preview;
-            var result = UIAutoBinderWindow.InspectForAutomation(root, true);
+            UIAutoGenerationResult result = UIAutoBinderWindow.InspectForAutomation(root, true);
             Schedule();
             return result;
         }
@@ -216,7 +251,7 @@ namespace AdvancedUIToolkit.Editor
         /// <returns>A summary of the generation results.</returns>
         internal static string GenerateAllPending()
         {
-            if (processing || EditorApplication.isPlayingOrWillChangePlaymode ||
+            if (processing || IsSuspended || EditorApplication.isPlayingOrWillChangePlaymode ||
                 EditorApplication.isCompiling || EditorApplication.isUpdating)
                 return "Cannot generate while Unity is busy compiling, importing, or entering Play Mode.";
 
@@ -288,21 +323,21 @@ namespace AdvancedUIToolkit.Editor
         /// <summary>Gets editable roots.</summary>
         private static IEnumerable<UIBindingRoot> GetEditableRoots()
         {
-            var visited = new HashSet<UIBindingRoot>();
+            HashSet<UIBindingRoot> visited = new HashSet<UIBindingRoot>();
             // A prefab opened in isolation has its own stage scene. Include it even
             // when it isn't among normal user scenes.
-            var stage = PrefabStageUtility.GetCurrentPrefabStage();
+            PrefabStage stage = PrefabStageUtility.GetCurrentPrefabStage();
             if (stage != null && stage.prefabContentsRoot != null)
-                foreach (var root in stage.prefabContentsRoot.GetComponentsInChildren<UIBindingRoot>(true))
+                foreach (UIBindingRoot root in stage.prefabContentsRoot.GetComponentsInChildren<UIBindingRoot>(true))
                     if (root != null && visited.Add(root)) yield return root;
 
             for (int index = 0; index < SceneManager.sceneCount; index++)
             {
-                var scene = SceneManager.GetSceneAt(index);
+                Scene scene = SceneManager.GetSceneAt(index);
                 if (!scene.isLoaded || !scene.IsValid()) continue;
                 // Don't touch the prefab stage twice if Unity lists it in SceneManager.
-                foreach (var obj in scene.GetRootGameObjects())
-                    foreach (var root in obj.GetComponentsInChildren<UIBindingRoot>(true))
+                foreach (GameObject obj in scene.GetRootGameObjects())
+                    foreach (UIBindingRoot root in obj.GetComponentsInChildren<UIBindingRoot>(true))
                         if (root != null && visited.Add(root) && !EditorUtility.IsPersistent(root))
                             yield return root;
             }
@@ -379,7 +414,7 @@ namespace AdvancedUIToolkit.Editor
 
             scroll = EditorGUILayout.BeginScrollView(scroll);
             int shown = 0;
-            foreach (var item in AdvancedUIToolkitAutomationMonitor.Results)
+            foreach (AdvancedUIToolkitAutomationMonitor.Item item in AdvancedUIToolkitAutomationMonitor.Results)
             {
                 if (item.Root == null || item.Result == null) continue;
                 if (!showUpToDate && item.Result.Status == UIAutoGenerationStatus.UpToDate) continue;
@@ -397,7 +432,7 @@ namespace AdvancedUIToolkit.Editor
                     GUILayout.Button(item.Result.Status == UIAutoGenerationStatus.PendingRemoval
                         ? "Remove Deleted Bindings" : "Generate Changes"))
                 {
-                    var result = AdvancedUIToolkitAutomationMonitor.GenerateOne(item.Root);
+                    UIAutoGenerationResult result = AdvancedUIToolkitAutomationMonitor.GenerateOne(item.Root);
                     lastAction = item.Root.name + ": " + result.Message;
                 }
                 EditorGUILayout.EndHorizontal();

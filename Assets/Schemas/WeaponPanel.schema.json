@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "name": "Weapon Control Panel",
+  "nodes": [
+    {
+      "id": "panel",
+      "kind": "container",
+      "name": "WeaponPanel",
+      "style": {
+        "width": 500,
+        "height": 280,
+        "background": "#192E42",
+        "layout": "vertical",
+        "spacing": 12,
+        "padding": 20
+      }
+    },
+    {
+      "id": "header",
+      "parentId": "panel",
+      "kind": "text",
+      "name": "TXT_WeaponTitle",
+      "text": "WEAPON SYSTEMS",
+      "style": {
+        "width": 440,
+        "height": 44,
+        "textColor": "#E5F0F4",
+        "fontSize": 23
+      }
+    },
+    {
+      "id": "row",
+      "parentId": "panel",
+      "kind": "container",
+      "name": "ButtonsParent",
+      "style": {
+        "width": 460,
+        "height": 60,
+        "layout": "horizontal",
+        "spacing": 10,
+        "padding": 4
+      }
+    },
+    {
+      "id": "load",
+      "parentId": "row",
+      "kind": "button",
+      "name": "BTN_Load",
+      "text": "LOAD",
+      "style": {
+        "width": 135,
+        "height": 48,
+        "background": "#33788C",
+        "textColor": "#FFFFFF",
+        "fontSize": 17
+      }
+    },
+    {
+      "id": "arm",
+      "parentId": "row",
+      "kind": "button",
+      "name": "BTN_Arm",
+      "text": "ARM",
+      "style": {
+        "width": 135,
+        "height": 48,
+        "background": "#33788C",
+        "textColor": "#FFFFFF",
+        "fontSize": 17
+      }
+    },
+    {
+      "id": "fire",
+      "parentId": "row",
+      "kind": "button",
+      "name": "BTN_Fire",
+      "text": "FIRE",
+      "style": {
+        "width": 135,
+        "height": 48,
+        "background": "#AC514B",
+        "textColor": "#FFFFFF",
+        "fontSize": 17
+      }
+    },
+    {
+      "id": "footer",
+      "parentId": "panel",
+      "kind": "text",
+      "name": "TXT_Status",
+      "text": "SYSTEM READY",
+      "style": {
+        "width": 440,
+        "height": 36,
+        "textColor": "#8AD8B2",
+        "fontSize": 15
+      }
+    }
+  ]
+}

@@ -55,7 +55,6 @@ com.advanceduitoolkit.framework/
 │   ├── UIPrefabPreviewCache.cs
 │   ├── UIStyleFactory.cs
 │   └── AdvancedUIToolkit.Editor.asmdef
-├── Tests/
 ├── Samples~/
 ├── Documentation~/
 └── Tools~/

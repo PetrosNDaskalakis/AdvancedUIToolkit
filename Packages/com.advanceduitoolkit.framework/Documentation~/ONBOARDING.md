@@ -17,12 +17,12 @@
 - New fields and methods in game scripts follow the team's XML-comment requirement.
 - New style prefabs belong in the game's Assets folder; core framework sources do not embed game-specific art or logic.
 - A rename that changes a **public generated property** is treated as an API change.
-- Unit tests should cover reference lookup and listeners; manual Unity checks cover prefab hierarchy/layout and Editor UI.
+- Manually verify reference lookup, listener lifecycle, prefab hierarchy/layout and Editor UI using the checklist.
 
 ## Before moving this package into production
 
 - [ ] Confirm no missing scripts in existing scenes/prefabs after GUID-safe migration.
-- [ ] Run all package EditMode and PlayMode tests.
+- [ ] Complete the [manual verification checklist](TEST_PLAN.md) in a clean project.
 - [ ] Build the game to verify Editor scripts are excluded.
-- [ ] Record Unity version, render pipeline, operating system, and test results.
+- [ ] Record Unity version, render pipeline, operating system, manual verification results, and profiler captures.
 - [ ] Review license/IP before publishing any company-related source or assets publicly.

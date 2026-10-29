@@ -147,3 +147,15 @@ The event scope suspends subscriptions while disabled and restores them when ena
 Binder exposes issues directly and more detailed diagnostics under **Show More**. Check: duplicate names, absent components, nested root boundaries, changed generated output paths, prefab-instance restrictions, and unexpected edits to generated files.
 
 For larger projects, test a representative screen, a nested prefab, and a pooled view before applying framework upgrades broadly. See [Troubleshooting](TROUBLESHOOTING.md) and the [Technical Overview](TECHNICAL_OVERVIEW.md).
+
+## Binder property documentation (v1.1 preview)
+
+In **Binder → Public Properties & XML Comments**, expand the section and write an optional XML Summary above each public property name. Click **Preview C#** then **Generate** to save comments to the binding manifest and generated C#. Leave a summary blank to retain the default template description. For screenshots and examples, see [Binder XML Summaries](BINDER_XML_SUMMARIES.md).
+
+## Preview 5: UI containers and prefab selections
+
+Binder and UI Library treat normal RectTransform groups as authoring parents and prevent prefab instances from becoming parent targets. See [Container selection and creation](CONTAINER_SELECTION_PREVIEW5.md) for the complete hierarchy example and Factory workflow.
+
+## Prefab Text Override (introduced Preview 8; stabilized Preview 9)
+
+UI Library can optionally replace one serialized `Text` or TextMeshPro label when creating a registered prefab. Select the prefab, enable **Override Displayed Text**, and enter the desired value. When multiple text labels exist, choose the correct **Text Target**. The override is applied to the **new prefab instance only**; its original asset is not edited. Binder generation is unaffected. See [Prefab Text Override](PREFAB_TEXT_OVERRIDE.md).

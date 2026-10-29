@@ -1,29 +1,24 @@
-# Advanced UI Toolkit v0.9.7 — Performance & Testing
+# Performance & verification — compact package
 
-This release adds **optional** diagnostics and regression tests; runtime behavior and generation settings are unchanged.
+[← Documentation Index](INDEX.md) · [Manual test plan](TEST_PLAN.md)
 
-## Performance window
+Advanced UI Toolkit v1.1.0 RC1 compact distribution does not ship synthetic benchmark scripts, a performance foldout in Binder, or EditMode/PlayMode test assemblies. These are developer-only tools, not part of the everyday authoring workflow.
 
-Open **Tools > Advanced UI Toolkit > Binder > Performance**. Choose a synthetic hierarchy size and an iteration count, then click **Run Benchmarks**. Copy Report provides the results, Unity version and configuration. The benchmark uses transient hidden objects, cleans them up in a `finally` block, and does not write assets or code.
+## Profile with Unity Profiler
 
-Measured operations: cached `Get<Button>`, cache rebuild + Get, `UIEventScope.Suspend` and `Resume`. Each metric uses five samples and reports the median microseconds/operation. Generation-zero collections are a rough signal, not allocated byte counts. These synthetic values are **not** representative of complete UI frame times or guaranteed performance.
+1. Open **Window → Analysis → Profiler** in a representative Unity project.
+2. Capture CPU Usage and GC Allocated In Frame while using Binder (scan and generation) and UI Library (idle, selection, and prefab creation).
+3. Profile both a typical panel and a larger UI hierarchy under comparable conditions.
+4. Compare recordings from the same Unity version, hardware, and project state; record any regressions.
 
-## Run tests
+Use Unity Profiler results for performance decisions rather than synthetic test numbers. This package does not claim measured improvements or zero allocations.
 
-1. Open **Window > General > Test Runner** (install Unity Test Framework if necessary).
-2. Run all **EditMode** tests and **PlayMode** tests.
-3. Embedded packages normally expose tests automatically; if not, add `"testables": ["com.advanceduitoolkit.framework"]` to the **project** `Packages/manifest.json` while preserving other entries, and reopen Unity. Advanced UI Toolkit does not edit your project manifest itself.
-4. Verify your existing WeaponPanel and Prefab/Factory scenes manually after upgrading.
+## Verify correctness manually
 
-## Manual verification
+- Create ordinary containers, then instantiate text-overridden prefab buttons under them. Prefab instances must not become authoring parents.
+- Confirm the original prefab assets remain unchanged and instance overrides persist after saving/reopening a scene.
+- Generate bindings and verify Manual/Automatic modes, XML comments, rename/delete, and Undo/Redo.
+- Enter Play Mode and verify event subscription, enable/disable behavior, and no duplicate callbacks.
+- Compile without optional TMP and with TMP present where applicable; complete a player build.
 
-- Existing WeaponPanel receives a single callback per interaction.
-- Repeated disable/enable cycles keep listeners suspended or active appropriately.
-- AutoBinder respects nested roots and Prefab Mode rules.
-- Manual generation still queues updates without writing C# until requested.
-- Running Performance creates no saved scene or prefab and does not compile scripts.
-- All EditMode and PlayMode tests pass in the installed Unity Editor.
-
-The Test Runner checks correctness, **not** performance thresholds. Benchmark numbers will differ by hardware, Unity version and Editor load. Compare on the same machine and do not assume zero allocations from a zero Gen0 count.
-
-For a current release checklist, see [TEST_PLAN.md](TEST_PLAN.md) and [ONBOARDING.md](ONBOARDING.md).
+See the [release checklist](RC1_EVIDENCE_CHECKLIST.md). Static package validation checks structure, not Unity Editor behavior.

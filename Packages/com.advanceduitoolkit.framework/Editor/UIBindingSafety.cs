@@ -54,9 +54,9 @@ namespace AdvancedUIToolkit.Editor
                 return;
             }
 
-            var keys = new HashSet<string>(StringComparer.Ordinal);
-            var ids = new HashSet<string>(StringComparer.Ordinal);
-            var references = new HashSet<Component>();
+            HashSet<string> keys = new HashSet<string>(StringComparer.Ordinal);
+            HashSet<string> ids = new HashSet<string>(StringComparer.Ordinal);
+            HashSet<Component> references = new HashSet<Component>();
             for (int index = 0; index < entries.Count; index++)
             {
                 UIBindingRoot.Entry entry = entries[index];
@@ -124,7 +124,7 @@ namespace AdvancedUIToolkit.Editor
             {
                 // A prefab variant's outermost staged root can inherit prefab-instance
                 // semantics. Editing that root in its own Prefab Mode remains valid.
-                var stage = PrefabStageUtility.GetCurrentPrefabStage();
+                PrefabStage stage = PrefabStageUtility.GetCurrentPrefabStage();
                 if (stage == null || stage.prefabContentsRoot != target)
                     return "The selected root is a prefab instance. Open the source prefab in Prefab Mode " +
                            "to avoid creating binding overrides on an instance.";
@@ -169,13 +169,13 @@ namespace AdvancedUIToolkit.Editor
             if (target == null)
                 return "Select a UI root before generating.";
             string ownerAsset = GetPrefabAssetPath(target);
-            var visited = new HashSet<UIBindingRoot>();
+            HashSet<UIBindingRoot> visited = new HashSet<UIBindingRoot>();
             string[] guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets" });
             foreach (string guid in guids)
             {
-                var asset = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
+                GameObject asset = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
                 if (asset == null) continue;
-                foreach (var other in asset.GetComponentsInChildren<UIBindingRoot>(true))
+                foreach (UIBindingRoot other in asset.GetComponentsInChildren<UIBindingRoot>(true))
                 {
                     if (visited.Add(other) && IsDifferentOwner(target, other, ownerAsset) &&
                         HasOutputPath(other, path))
@@ -187,8 +187,8 @@ namespace AdvancedUIToolkit.Editor
             {
                 Scene scene = SceneManager.GetSceneAt(index);
                 if (!scene.IsValid() || !scene.isLoaded) continue;
-                foreach (var sceneRoot in scene.GetRootGameObjects())
-                foreach (var other in sceneRoot.GetComponentsInChildren<UIBindingRoot>(true))
+                foreach (GameObject sceneRoot in scene.GetRootGameObjects())
+                foreach (UIBindingRoot other in sceneRoot.GetComponentsInChildren<UIBindingRoot>(true))
                 {
                     if (visited.Add(other) && IsDifferentOwner(target, other, ownerAsset) &&
                         HasOutputPath(other, path))
@@ -223,7 +223,7 @@ namespace AdvancedUIToolkit.Editor
         {
             string path = AssetDatabase.GetAssetPath(target);
             if (!string.IsNullOrEmpty(path)) return path;
-            var stage = PrefabStageUtility.GetCurrentPrefabStage();
+            PrefabStage stage = PrefabStageUtility.GetCurrentPrefabStage();
             if (stage != null && stage.prefabContentsRoot != null &&
                 target.transform.IsChildOf(stage.prefabContentsRoot.transform))
                 return stage.assetPath;
@@ -239,7 +239,7 @@ namespace AdvancedUIToolkit.Editor
         private static string GetPathWithinPrefab(GameObject target)
         {
             Transform boundary = null;
-            var stage = PrefabStageUtility.GetCurrentPrefabStage();
+            PrefabStage stage = PrefabStageUtility.GetCurrentPrefabStage();
             if (stage != null && stage.prefabContentsRoot != null &&
                 target.transform.IsChildOf(stage.prefabContentsRoot.transform))
                 boundary = stage.prefabContentsRoot.transform;
@@ -255,7 +255,7 @@ namespace AdvancedUIToolkit.Editor
                 while (boundary.parent != null)
                     boundary = boundary.parent;
             }
-            var segments = new Stack<string>();
+            Stack<string> segments = new Stack<string>();
             // The prefab root itself has no relative path segment. Its sibling
             // index differs between the source asset and instances in scenes.
             for (Transform current = target.transform; current != null && current != boundary;

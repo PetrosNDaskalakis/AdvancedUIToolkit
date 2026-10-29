@@ -80,12 +80,11 @@ those same handlers without reinitializing the view. Normal `MonoBehaviour` feat
 - The framework assumes normal Unity main-thread access to uGUI components.
 - Failed initialization disables the view, logs the exception, and disposes its scope; it does not attempt to reinitialize automatically on re-enable.
 
-## Testing
+## Manual lifecycle verification
 
-1. Run **EditMode** tests under `AdvancedUIToolkit.Tests.Editor` for event scope suspension, resumption, disposal, and existing bindings.
-2. Run **PlayMode** tests under `AdvancedUIToolkit.Tests.PlayMode` for real Unity activation cycles and destruction.
-3. Open a WeaponPanel with registered buttons, click once, deactivate/re-activate repeatedly, click again and confirm one log per press.
-4. Turn off only the `WeaponPanel` MonoBehaviour and confirm clicks do not reach its handlers.
-5. Check Console for exceptions when the panel is destroyed.
+1. Open a WeaponPanel with registered buttons, click once, deactivate/re-activate repeatedly, click again and confirm one log per press.
+2. Turn off only the `WeaponPanel` MonoBehaviour and confirm clicks do not reach its handlers.
+3. Destroy and recreate the panel; confirm no old callbacks continue firing and inspect Console for exceptions.
+4. Repeat after pooling/reusing a panel, with and without TMP installed when relevant.
 
-For non-embedded package installs, list `com.advanceduitoolkit.framework` in `testables` in `Packages/manifest.json` so package tests appear in Test Runner.
+The compact Preview 11 distribution contains no bundled EditMode or PlayMode test assemblies.

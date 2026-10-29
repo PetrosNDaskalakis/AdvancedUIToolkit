@@ -1,0 +1,192 @@
+{
+  "version": 1,
+  "name": "Naval Theme",
+  "tokens": [
+    {
+      "name": "--surface",
+      "value": "#192E42"
+    },
+    {
+      "name": "--accent",
+      "value": "#33788C"
+    },
+    {
+      "name": "--danger",
+      "value": "#AC514B"
+    },
+    {
+      "name": "--text-primary",
+      "value": "#E5F0F4"
+    },
+    {
+      "name": "--text-button",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "--text-ready",
+      "value": "#8AD8B2"
+    },
+    {
+      "name": "--pad",
+      "value": "20"
+    },
+    {
+      "name": "--gap",
+      "value": "12"
+    },
+    {
+      "name": "--button-width",
+      "value": "135"
+    },
+    {
+      "name": "--button-height",
+      "value": "48"
+    }
+  ],
+  "classes": [
+    {
+      "name": "weapon-panel",
+      "properties": [
+        {
+          "name": "width",
+          "value": "500"
+        },
+        {
+          "name": "height",
+          "value": "280"
+        },
+        {
+          "name": "background",
+          "value": "var(--surface)"
+        },
+        {
+          "name": "layout",
+          "value": "vertical"
+        },
+        {
+          "name": "spacing",
+          "value": "var(--gap)"
+        },
+        {
+          "name": "padding",
+          "value": "var(--pad)"
+        }
+      ]
+    },
+    {
+      "name": "section-title",
+      "properties": [
+        {
+          "name": "width",
+          "value": "440"
+        },
+        {
+          "name": "height",
+          "value": "44"
+        },
+        {
+          "name": "text-color",
+          "value": "var(--text-primary)"
+        },
+        {
+          "name": "font-size",
+          "value": "23"
+        },
+        {
+          "name": "text-align",
+          "value": "left"
+        }
+      ]
+    },
+    {
+      "name": "button-row",
+      "properties": [
+        {
+          "name": "width",
+          "value": "460"
+        },
+        {
+          "name": "height",
+          "value": "60"
+        },
+        {
+          "name": "layout",
+          "value": "horizontal"
+        },
+        {
+          "name": "spacing",
+          "value": "10"
+        },
+        {
+          "name": "padding",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "name": "weapon-button",
+      "properties": [
+        {
+          "name": "width",
+          "value": "var(--button-width)"
+        },
+        {
+          "name": "height",
+          "value": "var(--button-height)"
+        },
+        {
+          "name": "background",
+          "value": "var(--accent)"
+        },
+        {
+          "name": "text-color",
+          "value": "var(--text-button)"
+        },
+        {
+          "name": "font-size",
+          "value": "17"
+        }
+      ]
+    },
+    {
+      "name": "danger-button",
+      "extends": "weapon-button",
+      "properties": [
+        {
+          "name": "background",
+          "value": "var(--danger)"
+        }
+      ]
+    },
+    {
+      "name": "compact-button",
+      "properties": [
+        {
+          "name": "font-size",
+          "value": "16"
+        }
+      ]
+    },
+    {
+      "name": "status-label",
+      "properties": [
+        {
+          "name": "width",
+          "value": "440"
+        },
+        {
+          "name": "height",
+          "value": "36"
+        },
+        {
+          "name": "text-color",
+          "value": "var(--text-ready)"
+        },
+        {
+          "name": "font-size",
+          "value": "15"
+        }
+      ]
+    }
+  ]
+}

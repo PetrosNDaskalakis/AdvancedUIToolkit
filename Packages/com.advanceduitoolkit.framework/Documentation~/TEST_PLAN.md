@@ -1,12 +1,12 @@
-# Advanced UI Toolkit v0.9.9 release candidate verification plan
+# Advanced UI Toolkit v1.1.0 RC1 — manual verification plan
 
-This document is a **test procedure**, not evidence that the package has passed in Unity. Record your results for every Unity version you support. v0.9.8 intentionally changes documentation and samples only; runtime behavior is inherited from v0.9.7.
+This is a **manual verification procedure**, not proof that the RC1 package passed in Unity. The compact distribution includes **no EditMode or PlayMode test assemblies, no Test Runner shortcut, and no synthetic benchmarks**. Record hands-on results for each supported Editor version; profile with Unity Profiler. See [RC1 release notes](RC1_RELEASE_NOTES.md).
 
 ## 1. Clean-package installation
 
 - [ ] Create a new Unity project with uGUI available.
 - [ ] Install `com.advanceduitoolkit.framework` from `package.json` through Package Manager.
-- [ ] Confirm package version displays **0.9.9**.
+- [ ] Confirm package version displays **1.1.0-rc.1**.
 - [ ] Confirm **Tools > Advanced UI Toolkit > Binder** and **Tools > Advanced UI Toolkit > Factory** open.
 - [ ] Confirm no Editor code is referenced by player runtime builds.
 - [ ] If your game uses asmdefs, verify a game asmdef can reference `AdvancedUIToolkit.Runtime`.
@@ -28,6 +28,9 @@ This document is a **test procedure**, not evidence that the package has passed 
 - [ ] Create controls under a `UIStyleContext` and confirm the correct style resolves.
 - [ ] Add inherited base profile, override one component, and verify inheritance.
 - [ ] Factory names duplicate controls uniquely.
+- [ ] Ordinary UI containers can be used as parents; selecting a prefab resolves to its nearest regular container.
+- [ ] Prefab Text Override applies to one chosen root/child/inactive label, preserves source asset, and remains safe when source targets are removed/reordered.
+- [ ] Native fallback control, prefab instance, and empty container creation each undo independently of unrelated edits.
 - [ ] Preview shows image or a documented fallback for unsupported UI shaders.
 
 ## 4. Generator and automation
@@ -48,13 +51,13 @@ This document is a **test procedure**, not evidence that the package has passed 
 - [ ] Volume, Mute, PlayerName and Quality callbacks update the demo Status label.
 - [ ] Import **Station Style Libraries**; follow the guide with project-owned prefab assets.
 
-## 6. Unity Test Runner
+## 6. Manual verification and Unity Profiler
 
-1. Open **Window > General > Test Runner**. Install Unity Test Framework if absent.
-2. If package tests do not appear, add `"testables": ["com.advanceduitoolkit.framework"]` to the project's `Packages/manifest.json` (preserve other entries).
-3. Run all package **EditMode** tests and record outcomes.
-4. Run all package **PlayMode** tests and record outcomes.
-5. Run **Workspace > Performance** and copy the report as a baseline; don't conflate synthetic timings with frame times.
+1. Perform the workflows in sections 1–5 in a clean project and an upgraded project. Record failures and Unity Console messages.
+2. Enter Play Mode and verify button callbacks, lifecycle enable/disable behavior, and re-instantiation without duplicate listeners.
+3. Open **Window > Analysis > Profiler** and capture representative CPU Usage and GC Alloc measurements for Binder/Factory operations in your own UI scenes.
+4. Build a player for the target platform and confirm the Editor assembly is excluded.
+5. The compact UPM package intentionally does not include Test Runner suites or synthetic benchmarks.
 
 ## 7. Release evidence to record
 
@@ -62,15 +65,15 @@ This document is a **test procedure**, not evidence that the package has passed 
 | --- | --- |
 | Unity version | Fill after test |
 | OS | Fill after test |
-| Advanced UI Toolkit version | 0.9.9 |
+| Advanced UI Toolkit version | 1.1.0-rc.1 |
 | Package install | Pass / Fail |
 | Weapon Panel | Pass / Fail |
 | Settings Panel | Pass / Fail |
-| EditMode tests | Pass / Fail + count |
-| PlayMode tests | Pass / Fail + count |
+| Manual Editor workflows | Pass / Fail |
+| Play Mode lifecycle | Pass / Fail |
 | Player build | Pass / Fail |
 | Known issues | Notes |
 
 **Release gate:** do not call this version Unity-tested or production-ready until the checklist is actually executed in the target Editor and recorded.
 
-See [RELEASE_CANDIDATE_099.md](RELEASE_CANDIDATE_099.md) for current release gates and the required UX simplification stage before v1.0.
+See the [v1.1 release gates](V1_1_RELEASE_GATES.md) and [RC1 evidence checklist](RC1_EVIDENCE_CHECKLIST.md). After RC1, verify the manual gates, actual Unity builds, and publication requirements before tagging v1.1.0 Stable.

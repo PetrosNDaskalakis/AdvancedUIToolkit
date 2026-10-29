@@ -40,7 +40,7 @@ namespace AdvancedUIToolkit.Editor
                 }
             }
 
-            var output = new StringBuilder();
+            StringBuilder output = new StringBuilder();
             int oldIndex = 0;
             int newIndex = 0;
             while (oldIndex < oldLines.Length || newIndex < newLines.Length)

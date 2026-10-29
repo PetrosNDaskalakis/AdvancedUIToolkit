@@ -2,7 +2,7 @@
 
 [← README](../README.md) · [Installation](INSTALLATION.md) · [API Reference](API_REFERENCE.md)
 
-These instructions apply to **Advanced UI Toolkit `1.0.0-rc.13`**. Start with the first Unity Console error. Most reference problems can be inspected from **Tools → Advanced UI Toolkit → Binder**, then **Show More → Project diagnostics**.
+These instructions apply to **Advanced UI Toolkit `1.1.0-preview.2`**. Start with the first Unity Console error. Most reference problems can be inspected from **Tools → Advanced UI Toolkit → Binder**, then **Show More → Project diagnostics**.
 
 ## Compilation errors after installation
 
@@ -81,9 +81,9 @@ Verify the file was actually generated and compiled, the namespace in your `usin
 
 This normally indicates lost `.meta` GUIDs or duplicate copies of the same class. Restore your project backup and migrate while preserving original script GUIDs. Avoid removing the old scripts and creating brand-new GUID-bearing replacements.
 
-## Package tests do not appear
+## Testing and profiling
 
-Install Unity Test Framework. If necessary, include the package in the project manifest's `testables` list: `"testables": ["com.advanceduitoolkit.framework"]` without removing other entries. Open **Window → General → Test Runner** and inspect EditMode and PlayMode tests separately.
+The compact Preview 11 distribution intentionally has no bundled Test Runner assemblies or synthetic benchmark page. Use the [manual verification checklist](TEST_PLAN.md) to check functional behavior and **Window → Analysis → Profiler** for performance captures.
 
 ## Report an issue
 

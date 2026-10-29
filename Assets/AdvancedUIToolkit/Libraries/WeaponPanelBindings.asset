@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a3d65bb377c6a94db4df5af53a4b00e, type: 3}
+  m_Name: WeaponPanelBindings
+  m_EditorClassIdentifier: AdvancedUIToolkit.Runtime::AdvancedUIToolkit.UIStyleProfile
+  baseProfile: {fileID: 11400000}
+  templates:
+  - Kind: 1
+    Id: 
+    DefaultObjectName: BTN_Button
+    Prefab: {fileID: 1321746381286301640, guid: e4431a9039e0f1e4cae84ad359e46106, type: 3}
+  - Kind: 5
+    Id: 
+    DefaultObjectName: TGL_Toggle
+    Prefab: {fileID: 5575512737253857230, guid: 1b6285ef0935fdb478188647ce22b7ef, type: 3}
+  - Kind: 2
+    Id: 
+    DefaultObjectName: IMG_Image
+    Prefab: {fileID: 219115994233528583, guid: 3bb4f8f0104135047b62495c85545036, type: 3}
+  - Kind: 0
+    Id: 
+    DefaultObjectName: TXT_Text
+    Prefab: {fileID: 4644290804418881228, guid: 3edb28f66a4ab004ea1c9481141fdb0a, type: 3}

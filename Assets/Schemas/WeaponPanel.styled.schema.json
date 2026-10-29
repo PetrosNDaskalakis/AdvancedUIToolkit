@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "name": "Weapon Control Panel \u2014 Theme Example",
+  "nodes": [
+    {
+      "id": "panel",
+      "kind": "container",
+      "name": "WeaponPanel",
+      "styleClass": "weapon-panel"
+    },
+    {
+      "id": "header",
+      "parentId": "panel",
+      "kind": "text",
+      "name": "TXT_WeaponTitle",
+      "text": "WEAPON SYSTEMS",
+      "styleClass": "section-title"
+    },
+    {
+      "id": "row",
+      "parentId": "panel",
+      "kind": "container",
+      "name": "ButtonsParent",
+      "styleClass": "button-row"
+    },
+    {
+      "id": "load",
+      "parentId": "row",
+      "kind": "button",
+      "name": "BTN_Load",
+      "text": "LOAD",
+      "styleClass": "weapon-button"
+    },
+    {
+      "id": "arm",
+      "parentId": "row",
+      "kind": "button",
+      "name": "BTN_Arm",
+      "text": "ARM",
+      "styleClass": "weapon-button",
+      "styleClasses": [
+        "compact-button"
+      ],
+      "styleProperties": [
+        {
+          "name": "text-color",
+          "value": "var(--text-primary)"
+        }
+      ]
+    },
+    {
+      "id": "fire",
+      "parentId": "row",
+      "kind": "button",
+      "name": "BTN_Fire",
+      "text": "FIRE",
+      "styleClass": "danger-button"
+    },
+    {
+      "id": "footer",
+      "parentId": "panel",
+      "kind": "text",
+      "name": "TXT_Status",
+      "text": "SYSTEM READY",
+      "styleClass": "status-label"
+    }
+  ]
+}

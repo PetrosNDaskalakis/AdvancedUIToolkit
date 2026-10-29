@@ -156,7 +156,7 @@ namespace AdvancedUIToolkit.Editor
             if (namespaceName == null) throw new ArgumentNullException(nameof(namespaceName));
             if (entries == null) throw new ArgumentNullException(nameof(entries));
 
-            var manifest = entries.OrderBy(entry => entry.Key, StringComparer.Ordinal).ToList();
+            List<UIBindingRoot.Entry> manifest = entries.OrderBy(entry => entry.Key, StringComparer.Ordinal).ToList();
             if (string.IsNullOrEmpty(templatePath))
                 return GenerateDefault(className, namespaceName, manifest);
 
@@ -189,7 +189,7 @@ namespace AdvancedUIToolkit.Editor
         private static string GenerateDefault(string className, string namespaceName,
             List<UIBindingRoot.Entry> manifest)
         {
-            var builder = new StringBuilder();
+            StringBuilder builder = new StringBuilder();
             builder.AppendLine(GeneratedHeader);
             builder.AppendLine("using System;");
             builder.AppendLine("using AdvancedUIToolkit;");
@@ -222,12 +222,19 @@ namespace AdvancedUIToolkit.Editor
         private static string FormatProperties(List<UIBindingRoot.Entry> manifest, string indent,
             string documentation = DefaultPropertyDocumentation)
         {
-            var builder = new StringBuilder();
-            foreach (var entry in manifest)
+            StringBuilder builder = new StringBuilder();
+            foreach (UIBindingRoot.Entry entry in manifest)
             {
-                string summary = documentation.Replace("{name}", entry.Key ?? string.Empty)
-                    .Replace("{hierarchy}", entry.HierarchyKey ?? entry.Key ?? string.Empty)
-                    .Replace("{type}", entry.ComponentType ?? string.Empty);
+                // Per-property documentation wins over the optional global template
+                // pattern, while older entries without a summary remain unchanged.
+                string summary = !string.IsNullOrWhiteSpace(entry.XmlSummary)
+                    ? entry.XmlSummary.Trim()
+                    : documentation.Replace("{name}", entry.Key ?? string.Empty)
+                        .Replace("{hierarchy}", entry.HierarchyKey ?? entry.Key ?? string.Empty)
+                        .Replace("{type}", entry.ComponentType ?? string.Empty);
+                // A single-line Binder field should never produce malformed generated
+                // XML if serialized data is later modified outside the Editor.
+                summary = summary.Replace('\r', ' ').Replace('\n', ' ');
                 builder.Append(indent).Append("/// <summary>")
                     .Append(EscapeXml(summary)).AppendLine("</summary>");
                 builder.Append(indent).Append("public ").Append(entry.ComponentType).Append(' ')
@@ -252,8 +259,8 @@ namespace AdvancedUIToolkit.Editor
         /// <returns>Reference assignments ending in newlines.</returns>
         private static string FormatAssignments(List<UIBindingRoot.Entry> manifest, string indent)
         {
-            var builder = new StringBuilder();
-            foreach (var entry in manifest)
+            StringBuilder builder = new StringBuilder();
+            foreach (UIBindingRoot.Entry entry in manifest)
                 builder.Append(indent).Append(entry.Key).Append(" = root.Get<")
                     .Append(entry.ComponentType).Append(">(\"").Append(entry.Key).AppendLine("\");");
             return builder.ToString();

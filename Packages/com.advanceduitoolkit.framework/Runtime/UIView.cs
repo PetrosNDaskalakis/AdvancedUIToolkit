@@ -30,7 +30,7 @@ namespace AdvancedUIToolkit
         /// </summary>
         private void Awake()
         {
-            var root = GetComponent<UIBindingRoot>();
+            UIBindingRoot root = GetComponent<UIBindingRoot>();
             if (root == null)
             {
                 Debug.LogError("Advanced UI Toolkit: Missing UIBindingRoot on " + name + ".", this);

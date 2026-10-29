@@ -71,22 +71,22 @@ namespace AdvancedUIToolkit.Editor
         /// </summary>
         internal static Report Scan(bool prefabs, bool openScenes)
         {
-            var report = new Report();
-            var checkedRoots = new HashSet<UIBindingRoot>();
+            Report report = new Report();
+            HashSet<UIBindingRoot> checkedRoots = new HashSet<UIBindingRoot>();
 
             if (prefabs)
             {
-                var paths = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets" })
+                IEnumerable<string> paths = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets" })
                     .Select(AssetDatabase.GUIDToAssetPath)
                     .Where(path => !string.IsNullOrEmpty(path))
                     .Distinct(StringComparer.Ordinal)
                     .OrderBy(path => path, StringComparer.Ordinal);
-                foreach (var path in paths)
+                foreach (string path in paths)
                 {
-                    var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                    GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
                     if (prefab == null) continue;
                     report.PrefabsChecked++;
-                    foreach (var root in prefab.GetComponentsInChildren<UIBindingRoot>(true))
+                    foreach (UIBindingRoot root in prefab.GetComponentsInChildren<UIBindingRoot>(true))
                         if (checkedRoots.Add(root)) ValidateRoot(root, path, report);
                 }
             }
@@ -95,12 +95,12 @@ namespace AdvancedUIToolkit.Editor
             {
                 for (int i = 0; i < SceneManager.sceneCount; ++i)
                 {
-                    var scene = SceneManager.GetSceneAt(i);
+                    Scene scene = SceneManager.GetSceneAt(i);
                     if (!scene.isLoaded) continue;
                     report.ScenesChecked++;
                     string path = string.IsNullOrEmpty(scene.path) ? "<Unsaved Scene>" : scene.path;
-                    foreach (var sceneRoot in scene.GetRootGameObjects())
-                        foreach (var root in sceneRoot.GetComponentsInChildren<UIBindingRoot>(true))
+                    foreach (GameObject sceneRoot in scene.GetRootGameObjects())
+                        foreach (UIBindingRoot root in sceneRoot.GetComponentsInChildren<UIBindingRoot>(true))
                             if (checkedRoots.Add(root)) ValidateRoot(root, path, report);
                 }
             }
@@ -114,7 +114,7 @@ namespace AdvancedUIToolkit.Editor
             if (root == null) return;
             report.RootsChecked++;
             string scope = location + " / " + HierarchyPath(root.transform);
-            var entries = root.EditorGetEntries();
+            IReadOnlyList<UIBindingRoot.Entry> entries = root.EditorGetEntries();
             if (PrefabUtility.IsPartOfPrefabInstance(root))
                 Add(report, Severity.Info, scope,
                     "This is a prefab instance. Edit binding manifests in the source prefab's Prefab Mode.", root);
@@ -125,13 +125,13 @@ namespace AdvancedUIToolkit.Editor
                     "Binding root has an empty manifest. Scan and generate if this is a UI screen.", root);
             }
 
-            var keys = new HashSet<string>(StringComparer.Ordinal);
-            var hierarchyKeys = new HashSet<string>(StringComparer.Ordinal);
-            var ids = new HashSet<string>(StringComparer.Ordinal);
-            var references = new HashSet<Component>();
+            HashSet<string> keys = new HashSet<string>(StringComparer.Ordinal);
+            HashSet<string> hierarchyKeys = new HashSet<string>(StringComparer.Ordinal);
+            HashSet<string> ids = new HashSet<string>(StringComparer.Ordinal);
+            HashSet<Component> references = new HashSet<Component>();
 
             if (entries != null)
-            foreach (var entry in entries)
+            foreach (UIBindingRoot.Entry entry in entries)
             {
                 report.BindingsChecked++;
                 if (entry == null)
@@ -201,8 +201,8 @@ namespace AdvancedUIToolkit.Editor
                 }
             }
 
-            var currentKeys = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var transform in root.GetComponentsInChildren<Transform>(true))
+            HashSet<string> currentKeys = new HashSet<string>(StringComparer.Ordinal);
+            foreach (Transform transform in root.GetComponentsInChildren<Transform>(true))
             {
                 if (!IsInsideScope(root.transform, transform)) continue;
                 string name = transform.name;
@@ -232,7 +232,7 @@ namespace AdvancedUIToolkit.Editor
                         "New unbound UI component '" + name + "'. Scan and generate bindings.", component);
             }
 
-            var nestedWarnings = new List<string>();
+            List<string> nestedWarnings = new List<string>();
             UIBindingSafety.AppendNestedPrefabWarnings(root.gameObject, nestedWarnings);
             foreach (string warning in nestedWarnings)
                 Add(report, Severity.Info, scope, warning, root);
@@ -277,7 +277,7 @@ namespace AdvancedUIToolkit.Editor
         {
             if (child == null) return false;
             bool reachedRoot = false;
-            for (var t = child; t != null; t = t.parent)
+            for (Transform t = child; t != null; t = t.parent)
             {
                 if (t == selectedRoot) { reachedRoot = true; break; }
                 if (t.GetComponent<UIBindingRoot>() != null) return false;
@@ -288,8 +288,8 @@ namespace AdvancedUIToolkit.Editor
         /// <summary>Performs the hierarchy path operation.</summary>
         private static string HierarchyPath(Transform transform)
         {
-            var names = new List<string>();
-            for (var current = transform; current != null; current = current.parent)
+            List<string> names = new List<string>();
+            for (Transform current = transform; current != null; current = current.parent)
                 names.Add(current.name);
             names.Reverse();
             return string.Join("/", names.ToArray());
@@ -361,7 +361,7 @@ namespace AdvancedUIToolkit.Editor
                 "Roots: " + report.RootsChecked + "   Bindings: " + report.BindingsChecked +
                 "   Prefabs: " + report.PrefabsChecked + "   Scenes: " + report.ScenesChecked,
                 EditorStyles.boldLabel);
-            var summaryType = report.ErrorCount > 0 ? MessageType.Error :
+            MessageType summaryType = report.ErrorCount > 0 ? MessageType.Error :
                 report.WarningCount > 0 ? MessageType.Warning : MessageType.Info;
             EditorGUILayout.HelpBox(
                 report.ErrorCount + " errors, " + report.WarningCount + " warnings. " +
@@ -373,7 +373,7 @@ namespace AdvancedUIToolkit.Editor
             showInfo = EditorGUILayout.ToggleLeft("Info", showInfo, GUILayout.Width(70));
             EditorGUILayout.EndHorizontal();
             scroll = EditorGUILayout.BeginScrollView(scroll);
-            foreach (var finding in report.Findings)
+            foreach (AdvancedUIToolkitDiagnostics.Finding finding in report.Findings)
             {
                 if (finding.Level == AdvancedUIToolkitDiagnostics.Severity.Warning && !showWarnings) continue;
                 if (finding.Level == AdvancedUIToolkitDiagnostics.Severity.Info && !showInfo) continue;

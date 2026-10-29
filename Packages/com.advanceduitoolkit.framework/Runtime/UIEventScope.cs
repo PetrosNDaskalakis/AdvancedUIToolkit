@@ -175,7 +175,7 @@ namespace AdvancedUIToolkit
         /// <param name="detach">Action that removes the listener.</param>
         private void Register(Action attach, Action detach)
         {
-            var subscription = new Subscription(attach, detach);
+            Subscription subscription = new Subscription(attach, detach);
             if (!IsSuspended)
                 Attach(subscription);
 

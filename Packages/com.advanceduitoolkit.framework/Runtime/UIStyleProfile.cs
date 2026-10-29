@@ -91,11 +91,11 @@ namespace AdvancedUIToolkit
         /// <summary>Attempts to resolve identity.</summary>
         private bool TryResolveIdentity(string identity, out UIComponentTemplate template)
         {
-            var seen = new HashSet<UIStyleProfile>();
+            HashSet<UIStyleProfile> seen = new HashSet<UIStyleProfile>();
             for (UIStyleProfile current = this; current != null && seen.Add(current);
                  current = current.baseProfile)
             {
-                foreach (var item in current.templates)
+                foreach (UIComponentTemplate item in current.templates)
                 {
                     if (item != null && item.Identity == identity && item.Prefab != null)
                     {
@@ -111,13 +111,13 @@ namespace AdvancedUIToolkit
         /// <summary>Returns effective templates; a derived profile overrides inherited roles/IDs.</summary>
         public List<UIComponentTemplate> GetEffectiveTemplates()
         {
-            var result = new List<UIComponentTemplate>();
-            var seenProfiles = new HashSet<UIStyleProfile>();
-            var seenKeys = new HashSet<string>(StringComparer.Ordinal);
+            List<UIComponentTemplate> result = new List<UIComponentTemplate>();
+            HashSet<UIStyleProfile> seenProfiles = new HashSet<UIStyleProfile>();
+            HashSet<string> seenKeys = new HashSet<string>(StringComparer.Ordinal);
             for (UIStyleProfile current = this; current != null && seenProfiles.Add(current);
                  current = current.baseProfile)
             {
-                foreach (var item in current.templates)
+                foreach (UIComponentTemplate item in current.templates)
                 {
                     if (item != null && item.Prefab != null && seenKeys.Add(item.Identity))
                         result.Add(item);

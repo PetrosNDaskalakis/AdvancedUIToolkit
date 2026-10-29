@@ -1,5 +1,13 @@
 {
   "dependencies": {
+    "com.advanceduitoolkit.authoring": {
+      "version": "file:com.advanceduitoolkit.authoring",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.unity.ugui": "1.0.0"
+      }
+    },
     "com.advanceduitoolkit.framework": {
       "version": "file:com.advanceduitoolkit.framework",
       "depth": 0,

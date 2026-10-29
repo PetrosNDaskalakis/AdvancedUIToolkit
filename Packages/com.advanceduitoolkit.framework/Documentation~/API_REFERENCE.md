@@ -2,7 +2,7 @@
 
 [← README](../README.md) · [Architecture](ARCHITECTURE.md) · [Developer Handbook](DEVELOPER_HANDBOOK.md)
 
-This reference covers the **runtime API available in Advanced UI Toolkit `1.0.0-rc.13`**, based on the package's Runtime source. It does not include proposed JSON schemas or reactive data binding.
+This reference covers the **runtime API available in Advanced UI Toolkit `1.1.0-preview.2`**, based on the package's Runtime source. It does not include proposed JSON schemas or reactive data binding.
 
 > **Namespace:** `AdvancedUIToolkit` · **Runtime assembly:** `AdvancedUIToolkit.Runtime` · **UPM package:** `com.advanceduitoolkit.framework`
 

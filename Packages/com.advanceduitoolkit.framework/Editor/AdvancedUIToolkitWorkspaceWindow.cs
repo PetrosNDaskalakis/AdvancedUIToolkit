@@ -19,9 +19,7 @@ namespace AdvancedUIToolkit.Editor
             /// <summary>Optional automatic or manual batch generation.</summary>
             Automation,
             /// <summary>Optional project-wide diagnostics.</summary>
-            Diagnostics,
-            /// <summary>Optional local performance measurements.</summary>
-            Performance
+            Diagnostics
         }
 
         /// <summary>The minimum width suitable for Inspector docking.</summary>
@@ -42,14 +40,18 @@ namespace AdvancedUIToolkit.Editor
         /// <summary>Whether the project-wide diagnostic report is expanded.</summary>
         [SerializeField] private bool showDiagnostics;
 
-        /// <summary>Whether the performance tools are expanded.</summary>
-        [SerializeField] private bool showPerformance;
-
         /// <summary>Whether the entire warning/error list is expanded.</summary>
         [SerializeField] private bool showAllIssues;
 
+        /// <summary>Whether editable property names and XML summaries are expanded.</summary>
+        [SerializeField] private bool showPropertyDocumentation;
+
         /// <summary>Scrollable component preview position when a screen has many bindings.</summary>
         private Vector2 componentScroll;
+
+        /// <summary>Reusable row-filter buffer, rebuilt in-place when the search changes.</summary>
+        private readonly List<UIAutoBinderWindow.WorkspaceBinding> filteredComponentRows =
+            new List<UIAutoBinderWindow.WorkspaceBinding>();
 
         /// <summary>Scrollable position of the unified Binder page.</summary>
         private Vector2 pageScroll;
@@ -65,9 +67,6 @@ namespace AdvancedUIToolkit.Editor
 
         /// <summary>Existing advanced diagnostic page.</summary>
         private AdvancedUIToolkitDiagnosticsWindow diagnostics;
-
-        /// <summary>Existing read-only benchmark page.</summary>
-        private AdvancedUIToolkitPerformancePage performance;
 
         /// <summary>Short feedback after a user action.</summary>
         private string actionMessage;
@@ -95,7 +94,7 @@ namespace AdvancedUIToolkit.Editor
         {
             AdvancedUIToolkitWorkspaceWindow window = GetWindow<AdvancedUIToolkitWorkspaceWindow>("Binder");
             window.EnsurePages();
-            window.binder.SetWorkspaceTarget(root != null ? root.gameObject : null);
+            window.binder.SetWorkspaceTarget(ResolveRoot(root != null ? root.gameObject : null));
             window.actionMessage = null;
             window.Show();
             window.Focus();
@@ -107,7 +106,7 @@ namespace AdvancedUIToolkit.Editor
         {
             AdvancedUIToolkitWorkspaceWindow window = GetWindow<AdvancedUIToolkitWorkspaceWindow>("Binder");
             window.EnsurePages();
-            window.binder.SetWorkspaceTarget(root);
+            window.binder.SetWorkspaceTarget(ResolveRoot(root));
             window.Show();
             window.Focus();
         }
@@ -130,19 +129,21 @@ namespace AdvancedUIToolkit.Editor
             binder = null;
             automation = null;
             diagnostics = null;
-            performance = null;
         }
 
         /// <summary>Refreshes the component listing when the selected hierarchy changes.</summary>
         private void OnHierarchyChange()
         {
             if (binder != null) binder.WorkspaceHierarchyChanged();
+            // The old success message may no longer describe the regenerated source.
+            actionMessage = null;
             Repaint();
         }
 
         /// <summary>
-        /// Updates the selected root without losing the current screen when a normal child
-        /// is selected. Nested roots, however, are independent and must become active.
+        /// Follows non-prefab scene UI containers, resolving prefab selections to
+        /// their closest ordinary parent. Generation remains scoped to the owning
+        /// binding root instead of introducing a manifest on a prefab instance.
         /// </summary>
         private void OnSelectionChange()
         {
@@ -153,14 +154,17 @@ namespace AdvancedUIToolkit.Editor
             {
                 binder.SetWorkspaceTarget(target);
                 actionMessage = null;
+                componentScroll = Vector2.zero;
+                pageScroll = Vector2.zero;
+                showAllIssues = false;
             }
             Repaint();
         }
 
         /// <summary>
-        /// Chooses which UI root should be displayed after a Hierarchy selection change.
-        /// Keeps the current root for ordinary descendants and non-UI selections but
-        /// switches to the closest independent nested UIBindingRoot when selected.
+        /// Chooses which binding scope to inspect after a Hierarchy selection change.
+        /// Child controls are displayed as selected while generation remains scoped
+        /// to their owning root; independent nested roots switch that scope.
         /// </summary>
         /// <param name="current">Root currently displayed by the Workspace.</param>
         /// <param name="selected">Newly selected object in Unity's Hierarchy.</param>
@@ -168,10 +172,12 @@ namespace AdvancedUIToolkit.Editor
         internal static GameObject ResolveSelectionTarget(GameObject current, GameObject selected)
         {
             if (selected == null || EditorUtility.IsPersistent(selected)) return current;
+            GameObject eligible = ResolveSelectedGameObject(selected);
+            if (eligible == null) return current;
 
-            GameObject resolved = ResolveRoot(selected);
-            if (current != null && (selected == current ||
-                selected.transform.IsChildOf(current.transform)))
+            GameObject resolved = ResolveRoot(eligible);
+            if (current != null && (eligible == current ||
+                eligible.transform.IsChildOf(current.transform)))
             {
                 if (resolved != null && resolved != current &&
                     resolved.transform.IsChildOf(current.transform) &&
@@ -180,7 +186,6 @@ namespace AdvancedUIToolkit.Editor
 
                 return current;
             }
-
             return resolved ?? current;
         }
 
@@ -192,10 +197,13 @@ namespace AdvancedUIToolkit.Editor
         /// <returns>The root to inspect, or null when the selection is not UI.</returns>
         internal static GameObject ResolveRoot(GameObject selected)
         {
-            if (selected == null || EditorUtility.IsPersistent(selected)) return null;
-            UIBindingRoot existing = selected.GetComponentInParent<UIBindingRoot>();
-            if (existing != null) return existing.gameObject;
-            return selected.GetComponent<RectTransform>() != null ? selected : null;
+            RectTransform eligible = UIHierarchySelection.ResolveParent(null, selected);
+            if (eligible == null) return null;
+            UIBindingRoot existing = eligible.GetComponentInParent<UIBindingRoot>();
+            // A binding root on a prefab must not become the selected authoring scope.
+            if (existing != null && UIHierarchySelection.IsSelectableContainer(existing.gameObject))
+                return existing.gameObject;
+            return eligible.gameObject;
         }
 
         /// <summary>Creates the existing Editor-only implementation pages when needed.</summary>
@@ -208,7 +216,6 @@ namespace AdvancedUIToolkit.Editor
             }
             if (automation == null) automation = CreateInstance<AdvancedUIToolkitAutomationWindow>();
             if (diagnostics == null) diagnostics = CreateInstance<AdvancedUIToolkitDiagnosticsWindow>();
-            if (performance == null) performance = new AdvancedUIToolkitPerformancePage();
         }
 
         /// <summary>Opens the corresponding advanced foldout when navigating from older tools.</summary>
@@ -219,7 +226,6 @@ namespace AdvancedUIToolkit.Editor
             showAdvanced = true;
             if (tab == WorkspaceTab.Automation) showAutomation = true;
             if (tab == WorkspaceTab.Diagnostics) showDiagnostics = true;
-            if (tab == WorkspaceTab.Performance) showPerformance = true;
         }
 
         /// <summary>
@@ -237,6 +243,13 @@ namespace AdvancedUIToolkit.Editor
                 DrawBindingSummary();
                 DrawIssues();
                 DrawComponentList();
+                if (binder.GetWorkspaceBindings().Count > 0)
+                {
+                    showPropertyDocumentation = EditorGUILayout.Foldout(showPropertyDocumentation,
+                        "Public Properties & XML Comments", true);
+                    if (showPropertyDocumentation)
+                        binder.DrawWorkspacePropertyDocumentation(componentSearch);
+                }
             }
             else
             {
@@ -244,7 +257,7 @@ namespace AdvancedUIToolkit.Editor
                     "Select a Canvas panel or UI root in the Hierarchy to begin.",
                     MessageType.Info);
             }
-            DrawActions();
+            if (binder.WorkspaceTarget != null) DrawActions();
             if (showAdvanced) DrawAdvanced();
             EditorGUILayout.EndScrollView();
         }
@@ -264,28 +277,86 @@ namespace AdvancedUIToolkit.Editor
             }
         }
 
-        /// <summary>Lets developers pick their UI root or use the current Hierarchy selection.</summary>
+        /// <summary>
+        /// Displays the exact Hierarchy selection alongside its owning binding scope.
+        /// Inspecting child controls must not create separate binding manifests for
+        /// each child; users can still explicitly choose a different binding root.
+        /// </summary>
         private void DrawRootSelector()
         {
             using (new EditorGUILayout.HorizontalScope())
             {
-                GUILayout.Label("UI Root", GUILayout.Width(52f));
+                GUILayout.Label(new GUIContent("Selected",
+                    "Closest non-prefab UI container to the Hierarchy selection."), GUILayout.Width(78f));
+                using (new EditorGUI.DisabledScope(true))
+                    EditorGUILayout.ObjectField(ResolveSelectedGameObject(Selection.activeGameObject),
+                        typeof(GameObject), true, GUILayout.MinWidth(80f));
+            }
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                GUILayout.Label(new GUIContent("Binding Root",
+                    "Owning binding scope. Prefab instances cannot become authoring targets."),
+                    GUILayout.Width(78f));
                 GameObject previous = binder.WorkspaceTarget;
                 GameObject selected = (GameObject)EditorGUILayout.ObjectField(
                     previous, typeof(GameObject), true, GUILayout.MinWidth(80f));
                 if (selected != previous)
                 {
-                    binder.SetWorkspaceTarget(selected);
+                    // Explicit Object-field selection may intentionally bind a child
+                    // panel that does not yet have its own manifest.
+                    binder.SetWorkspaceTarget(ResolveManualBindingTarget(previous, selected));
                     actionMessage = null;
-                }
-                if (GUILayout.Button(new GUIContent("Use Selected", "Use the closest UI binding root in the Hierarchy."),
-                    GUILayout.Width(92f)))
-                {
-                    binder.SetWorkspaceTarget(ResolveRoot(Selection.activeGameObject));
-                    actionMessage = null;
+                    componentScroll = Vector2.zero;
+                    pageScroll = Vector2.zero;
+                    showAllIssues = false;
                 }
             }
         }
+
+        /// <summary>
+        /// Resolves a deliberate manual Binding Root field edit. A non-prefab child
+        /// may intentionally become a new binding scope; a prefab selection instead
+        /// falls back to its owning root without creating a manifest on the prefab.
+        /// </summary>
+        /// <param name="current">Previously active binding root.</param>
+        /// <param name="requested">Object chosen in the Binding Root field.</param>
+        /// <returns>A valid manual binding target, or null when cleared.</returns>
+        internal static GameObject ResolveManualBindingTarget(GameObject current, GameObject requested)
+        {
+            if (requested == null) return null;
+            GameObject eligible = ResolveSelectedGameObject(requested);
+            if (eligible == null) return current;
+            return PrefabUtility.IsPartOfPrefabInstance(requested)
+                ? ResolveRoot(eligible) : eligible;
+        }
+
+        /// <summary>
+        /// Shows only non-prefab UI containers, resolving clicked prefab controls
+        /// to their closest ordinary parent.
+        /// </summary>
+        /// <param name="selected">The currently selected GameObject.</param>
+        /// <returns>The selected scene GameObject or null.</returns>
+        internal static GameObject ResolveSelectedGameObject(GameObject selected) =>
+            UIHierarchySelection.ResolveParent(null, selected) is RectTransform parent
+                ? parent.gameObject : null;
+
+        /// <summary>
+        /// Returns whether the selected non-prefab UI object matches a binding row.
+        /// Prefab instances are never shown as selected authoring targets.
+        /// </summary>
+        /// <param name="selected">The exact selected GameObject.</param>
+        /// <param name="component">A discovered UI component.</param>
+        /// <returns>True when the component itself or one of its children is selected.</returns>
+        internal static bool IsSelectedBinding(GameObject selected, Component component) =>
+            selected != null && component != null &&
+            UIHierarchySelection.IsSelectableContainer(selected) &&
+            !PrefabUtility.IsPartOfPrefabInstance(component.gameObject) &&
+            (selected == component.gameObject ||
+                selected.transform.IsChildOf(component.transform) ||
+                (selected.GetComponent<UIBindingRoot>() == null &&
+                 component.transform.IsChildOf(selected.transform) &&
+                 AdvancedUIToolkitNaming.TypeByPrefix.ContainsKey(
+                     selected.name.Split('_')[0])));
 
         /// <summary>Displays a concise scan status without exposing engine internals.</summary>
         private void DrawBindingSummary()
@@ -298,9 +369,13 @@ namespace AdvancedUIToolkit.Editor
             {
                 GUILayout.Label(bindings.Count + " components", EditorStyles.miniLabel);
                 GUILayout.FlexibleSpace();
-                GUILayout.Label(pending + " changes", EditorStyles.miniLabel);
+                string pendingLabel = pending > 0 ? pending + " pending" :
+                    bindings.Count == 0 && binder.WorkspaceRemovedCount == 0 ? "No controls" :
+                    binder.WorkspaceHasConfigurationChanges ? "Settings pending" : "Up to date";
+                GUILayout.Label(pendingLabel, EditorStyles.miniLabel);
                 GUILayout.FlexibleSpace();
-                GUILayout.Label(errors == 0 ? "No errors" : errors + " errors", EditorStyles.miniLabel);
+                GUILayout.Label(errors > 0 ? errors + " blocking" :
+                    binder.WorkspaceCanGenerate ? "Ready" : "No changes", EditorStyles.miniLabel);
                 if (GUILayout.Button(new GUIContent("↻", "Re-scan selected UI root."),
                     GUILayout.Width(26f)))
                     binder.RefreshWorkspace();
@@ -359,23 +434,28 @@ namespace AdvancedUIToolkit.Editor
                 GUILayout.FlexibleSpace();
                 componentSearch = GUILayout.TextField(componentSearch,
                     GUI.skin.FindStyle("ToolbarSeachTextField") ?? EditorStyles.textField,
-                    GUILayout.MinWidth(95f), GUILayout.MaxWidth(210f));
+                    GUILayout.MinWidth(80f), GUILayout.MaxWidth(210f));
+                if (!string.IsNullOrEmpty(componentSearch) &&
+                    GUILayout.Button(new GUIContent("×", "Clear component and property search"),
+                        EditorStyles.toolbarButton, GUILayout.Width(22f)))
+                {
+                    componentSearch = string.Empty;
+                    GUI.FocusControl(null);
+                }
             }
 
             List<UIAutoBinderWindow.WorkspaceBinding> items = binder.GetWorkspaceBindings();
-            List<UIAutoBinderWindow.WorkspaceBinding> matches = new List<UIAutoBinderWindow.WorkspaceBinding>();
+            filteredComponentRows.Clear();
             foreach (UIAutoBinderWindow.WorkspaceBinding item in items)
             {
                 if (item.Component == null) continue;
-                if (!string.IsNullOrEmpty(componentSearch) &&
-                    item.Component.gameObject.name.IndexOf(componentSearch,
-                        StringComparison.OrdinalIgnoreCase) < 0 &&
-                    item.ApiKey.IndexOf(componentSearch, StringComparison.OrdinalIgnoreCase) < 0)
+                if (!UIAutoBinderWindow.MatchesBindingSearch(componentSearch,
+                    item.Component.gameObject.name, item.ApiKey, item.HierarchyKey))
                     continue;
-                matches.Add(item);
+                filteredComponentRows.Add(item);
             }
 
-            if (matches.Count == 0)
+            if (filteredComponentRows.Count == 0)
             {
                 string message = items.Count == 0
                     ? (binder.WorkspaceRemovedCount > 0
@@ -383,29 +463,40 @@ namespace AdvancedUIToolkit.Editor
                         : "No named UI controls found. Add components in Factory.")
                     : "No matching components.";
                 GUILayout.Label(message, EditorStyles.wordWrappedMiniLabel);
+                if (!string.IsNullOrEmpty(componentSearch) &&
+                    GUILayout.Button("Clear Search", EditorStyles.miniButton))
+                    componentSearch = string.Empty;
                 return;
             }
 
-            bool needsScrolling = matches.Count > VisibleComponentRows;
+            bool needsScrolling = filteredComponentRows.Count > VisibleComponentRows;
             if (needsScrolling)
                 componentScroll = EditorGUILayout.BeginScrollView(componentScroll,
                     GUILayout.Height(VisibleComponentRows * 30f), GUILayout.ExpandHeight(false));
 
-            foreach (UIAutoBinderWindow.WorkspaceBinding item in matches)
+            GameObject selectedContainer = ResolveSelectedGameObject(Selection.activeGameObject);
+            foreach (UIAutoBinderWindow.WorkspaceBinding item in filteredComponentRows)
             {
                 using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
                 {
-                    GUILayout.Label(item.Component.gameObject.name, GUILayout.MinWidth(70f),
-                        GUILayout.ExpandWidth(true));
+                    bool isSelected = IsSelectedBinding(selectedContainer, item.Component);
+                    GUILayout.Label(item.Component.gameObject.name,
+                        isSelected ? EditorStyles.boldLabel : EditorStyles.label,
+                        GUILayout.MinWidth(70f), GUILayout.ExpandWidth(true));
+                    if (isSelected && position.width > 405f)
+                        GUILayout.Label("SELECTED", EditorStyles.miniBoldLabel, GUILayout.Width(67f));
                     if (position.width > 460f)
                         GUILayout.Label(item.ApiKey, EditorStyles.miniLabel, GUILayout.Width(110f));
                     if (item.RequiresGeneration)
                         GUILayout.Label(item.Change == "New binding" ? "NEW" : "EDIT",
                             EditorStyles.miniBoldLabel, GUILayout.Width(34f));
-                    if (GUILayout.Button(new GUIContent(">", "Select component in the Hierarchy"),
+                    if (GUILayout.Button(new GUIContent(">", "Locate component without changing prefab parent selection"),
                         GUILayout.Width(25f)))
                     {
-                        Selection.activeObject = item.Component.gameObject;
+                        // Prefab instances can be pinged for inspection, but cannot
+                        // become the active Binder/Factory authoring selection.
+                        if (UIHierarchySelection.IsSelectableContainer(item.Component.gameObject))
+                            Selection.activeObject = item.Component.gameObject;
                         EditorGUIUtility.PingObject(item.Component.gameObject);
                     }
                 }
@@ -425,7 +516,7 @@ namespace AdvancedUIToolkit.Editor
             {
                 EditorGUILayout.LabelField("More Options", EditorStyles.boldLabel);
                 showGenerationSettings = EditorGUILayout.Foldout(showGenerationSettings,
-                    "Generation settings & property names", true);
+                    "Generation settings", true);
                 if (showGenerationSettings) binder.DrawAdvancedWorkspaceSettings();
                 showAutomation = EditorGUILayout.Foldout(showAutomation,
                     "Automation & batch generation", true);
@@ -433,9 +524,6 @@ namespace AdvancedUIToolkit.Editor
                 showDiagnostics = EditorGUILayout.Foldout(showDiagnostics,
                     "Project diagnostics", true);
                 if (showDiagnostics) diagnostics.DrawWorkspacePage();
-                showPerformance = EditorGUILayout.Foldout(showPerformance,
-                    "Performance benchmarks", true);
-                if (showPerformance) performance.Draw();
             }
         }
 
@@ -476,6 +564,11 @@ namespace AdvancedUIToolkit.Editor
                     }
                 }
             }
+            if (!valid && binder.WorkspaceErrorCount == 0 && binder.WorkspaceRemovedCount == 0)
+                GUILayout.Label("Add a named UI control to enable generation.",
+                    EditorStyles.wordWrappedMiniLabel);
+            // Blocking reasons are shown in the Issue summary directly above the list;
+            // repeating the same warning below disabled actions wastes dock space.
             if (configured && pending == 0 && !binder.WorkspaceHasConfigurationChanges && valid)
                 EditorGUILayout.LabelField("Bindings up to date", EditorStyles.centeredGreyMiniLabel);
             EditorGUILayout.LabelField(
@@ -485,12 +578,17 @@ namespace AdvancedUIToolkit.Editor
                 EditorStyles.centeredGreyMiniLabel);
         }
 
-        /// <summary>Opens Factory preconfigured for the current UI root when possible.</summary>
+        /// <summary>
+        /// Opens Factory at the exact selected UI object, falling back to the active
+        /// binding root when a non-UI object is selected.
+        /// </summary>
         private void OpenFactoryForRoot()
         {
-            RectTransform uiRoot = binder != null && binder.WorkspaceTarget != null
+            GameObject selected = ResolveSelectedGameObject(Selection.activeGameObject);
+            RectTransform selectedRect = selected != null ? selected.GetComponent<RectTransform>() : null;
+            RectTransform root = binder != null && binder.WorkspaceTarget != null
                 ? binder.WorkspaceTarget.GetComponent<RectTransform>() : null;
-            UIComponentLibraryWindow.OpenFor(uiRoot);
+            UIComponentLibraryWindow.OpenFor(selectedRect != null ? selectedRect : root);
         }
     }
 }

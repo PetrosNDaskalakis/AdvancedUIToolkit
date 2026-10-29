@@ -22,6 +22,12 @@ namespace AdvancedUIToolkit.Editor
         private readonly List<UIStyleProfile> profiles = new List<UIStyleProfile>();
         /// <summary>Stores the selected profile reference or configuration value.</summary>
         private UIStyleProfile selectedProfile;
+        /// <summary>
+        /// Effective inherited prefab list shared by the header, component browser,
+        /// and selected component details during one OnGUI pass. Recomputed each pass,
+        /// so external Profile edits and Undo cannot leave a stale cross-frame cache.
+        /// </summary>
+        private List<UIComponentTemplate> effectiveTemplatesForGui;
         /// <summary>Stores the search component reference or configuration value.</summary>
         private string searchComponent = string.Empty;
         /// <summary>Stores the selected identity reference or configuration value.</summary>
@@ -57,8 +63,18 @@ namespace AdvancedUIToolkit.Editor
         [SerializeField] private RectTransform targetRoot;
         /// <summary>True while the Factory is instantiating a component through its own UI.</summary>
         private bool isCreatingComponent;
-        /// <summary>Last Factory-created object, whose automatic selection should not change the root.</summary>
+        /// <summary>Last Factory-created prefab, whose automatic selection should not change the parent.</summary>
         private GameObject lastCreatedComponent;
+        /// <summary>Editable name for the next non-prefab layout container.</summary>
+        [SerializeField] private string newContainerName = "Container";
+        /// <summary>Whether the next instance should override its original displayed text.</summary>
+        [SerializeField] private bool overrideDisplayedText;
+        /// <summary>Which discovered text component on the selected prefab to override.</summary>
+        [SerializeField] private int selectedTextTargetIndex;
+        /// <summary>Actual selected source label, unaffected by label reordering.</summary>
+        [SerializeField] private Component selectedTextSourceComponent;
+        /// <summary>Text to apply to the new instance; an empty string is intentional.</summary>
+        [SerializeField] private string displayedText = string.Empty;
 
         /// <summary>Opens the UI Library window.</summary>
         [MenuItem("Tools/Advanced UI Toolkit/Factory", false, 2)]
@@ -71,9 +87,9 @@ namespace AdvancedUIToolkit.Editor
             UIComponentLibraryWindow window = GetWindow<UIComponentLibraryWindow>("UI Library");
             if (root != null)
             {
+                // SetTargetRoot already follows a UIStyleContext when present.
+                // Without an explicit context, preserve the developer's chosen library.
                 window.SetTargetRoot(root);
-                UIStyleProfile profile = UIStyleFactory.ResolveProfile(root);
-                if (profile != null && window.selectedProfile == null) window.SelectProfile(profile);
             }
             window.Show();
             window.Focus();
@@ -117,8 +133,9 @@ namespace AdvancedUIToolkit.Editor
         }
 
         /// <summary>
-        /// Follows meaningful Hierarchy root selections without redirecting creation into
-        /// ordinary controls or UI objects instantiated by the Factory itself.
+        /// Follows non-prefab UI containers. Selecting a prefab or one of its children
+        /// resolves to the nearest non-prefab ancestor. Factory-created prefabs never
+        /// become the next creation parent.
         /// </summary>
         private void OnSelectionChange()
         {
@@ -135,81 +152,30 @@ namespace AdvancedUIToolkit.Editor
         }
 
         /// <summary>
-        /// Chooses the current UI creation root from a Hierarchy selection. Selection inside
-        /// the active root preserves that root unless it enters a separately marked UI
-        /// binding/style scope. Selections in a different UI hierarchy choose that hierarchy.
-        /// Non-UI objects and project assets leave the root unchanged.
+        /// Selects the closest non-prefab RectTransform. Prefab instance selections
+        /// resolve to their parent container, never to the prefab itself.
         /// </summary>
-        /// <param name="current">Previously selected UI creation root.</param>
-        /// <param name="selected">Newly selected GameObject.</param>
-        /// <returns>The appropriate UI root to create components under.</returns>
-        internal static RectTransform ResolveSelectionRoot(RectTransform current, GameObject selected)
-        {
-            if (selected == null || EditorUtility.IsPersistent(selected)) return current;
-
-            RectTransform selectedRect = selected.GetComponent<RectTransform>();
-            if (selectedRect == null) return current;
-
-            // Explicitly selecting a panel/screen means switching creation targets,
-            // even when both panels share the same enclosing binding root.
-            bool selectedContainer = IsNamedUIContainer(selected);
-            RectTransform nearestScope = null;
-            for (Transform node = selected.transform; node != null; node = node.parent)
-            {
-                if (node is RectTransform rect &&
-                    (node.GetComponent<UIBindingRoot>() != null ||
-                     node.GetComponent<UIStyleContext>() != null))
-                {
-                    nearestScope = rect;
-                    break;
-                }
-            }
-
-            if (current != null &&
-                (selected.transform == current || selected.transform.IsChildOf(current)))
-            {
-                // A normal control is not a new creation root. Explicitly selected
-                // panels and separately marked nested UI roots are exceptions.
-                if (selectedContainer && selectedRect != current) return selectedRect;
-                if (nearestScope != null && nearestScope != current &&
-                    nearestScope.IsChildOf(current))
-                    return nearestScope;
-                return current;
-            }
-
-            return selectedContainer ? selectedRect : nearestScope != null ? nearestScope : selectedRect;
-        }
+        /// <param name="current">Previously selected creation parent.</param>
+        /// <param name="selected">Current Hierarchy selection.</param>
+        /// <returns>The closest non-prefab UI parent, or the last valid parent.</returns>
+        internal static RectTransform ResolveSelectionRoot(RectTransform current, GameObject selected) =>
+            UIHierarchySelection.ResolveParent(current, selected);
 
         /// <summary>
-        /// Recognizes intentionally selected UI panels or screens without considering
-        /// interactive buttons, text labels, or images to be new creation roots.
-        /// </summary>
-        /// <param name="selected">The selected UI GameObject.</param>
-        /// <returns>True when this is a likely screen/panel container.</returns>
-        private static bool IsNamedUIContainer(GameObject selected)
-        {
-            if (selected == null || selected.GetComponent<Selectable>() != null ||
-                selected.GetComponent<Graphic>() != null)
-                return false;
-
-            string name = selected.name;
-            return name.Equals("Panel", StringComparison.OrdinalIgnoreCase) ||
-                name.Equals("Screen", StringComparison.OrdinalIgnoreCase) ||
-                name.StartsWith("PNL_", StringComparison.OrdinalIgnoreCase) ||
-                name.EndsWith("Panel", StringComparison.OrdinalIgnoreCase) ||
-                name.EndsWith("Screen", StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Sets the root and selects a matching style profile when one is associated with it.
-        /// Does not erase a manually selected library when the target has no style profile.
+        /// Updates the validated creation parent and resolves any inherited style context.
+        /// Does not erase a manually selected library when the parent has no style profile.
         /// </summary>
         /// <param name="root">The new creation root.</param>
         private void SetTargetRoot(RectTransform root)
         {
-            if (targetRoot == root) return;
-            targetRoot = root;
-            if (root == null) return;
+            RectTransform current = targetRoot == null ? null :
+                UIHierarchySelection.ResolveParent(null, targetRoot.gameObject);
+            RectTransform resolved = root == null ? null :
+                UIHierarchySelection.ResolveParent(current, root.gameObject);
+            if (targetRoot == resolved) return;
+            targetRoot = resolved;
+            if (targetRoot == null) return;
+            root = targetRoot;
             for (Transform node = root; node != null; node = node.parent)
             {
                 UIStyleContext context = node.GetComponent<UIStyleContext>();
@@ -257,25 +223,49 @@ namespace AdvancedUIToolkit.Editor
                 GUILayout.Label("Create Components", EditorStyles.boldLabel);
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button("Binder", EditorStyles.toolbarButton, GUILayout.Width(80f)))
-                    AdvancedUIToolkitWorkspaceWindow.OpenForRoot(targetRoot != null ? targetRoot.gameObject : null);
+                    AdvancedUIToolkitWorkspaceWindow.OpenForRoot(targetRoot != null
+                        ? AdvancedUIToolkitWorkspaceWindow.ResolveRoot(targetRoot.gameObject) : null);
                 if (GUILayout.Button(showAdvancedOptions ? "Show Less" : "Show More",
                     EditorStyles.toolbarButton, GUILayout.Width(90f)))
                     showAdvancedOptions = !showAdvancedOptions;
             }
         }
 
-        /// <summary>Displays the root, which follows meaningful Unity Hierarchy selections.</summary>
+        /// <summary>Displays the exact prefab creation parent from the Hierarchy.</summary>
         private void DrawTargetBar(ref RectTransform parent)
         {
             using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
             {
-                GUILayout.Label(new GUIContent("Root", "Automatically follows the selected UI root in the Hierarchy."),
-                    GUILayout.Width(32));
+                GUILayout.Label(new GUIContent("Parent", "Follows non-prefab UI containers. Selecting a prefab uses its nearest valid parent."),
+                    GUILayout.Width(47));
                 RectTransform newRoot = (RectTransform)EditorGUILayout.ObjectField(
                     targetRoot, typeof(RectTransform), true, GUILayout.MinWidth(75));
                 if (newRoot != targetRoot) SetTargetRoot(newRoot);
             }
             parent = targetRoot;
+            using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
+            {
+                GUILayout.Label(new GUIContent("Container", "Create a regular, non-prefab RectTransform under the active parent."),
+                    GUILayout.Width(61f));
+                newContainerName = GUILayout.TextField(newContainerName, GUILayout.MinWidth(60f),
+                    GUILayout.ExpandWidth(true));
+                using (new EditorGUI.DisabledScope(parent == null ||
+                    string.IsNullOrWhiteSpace(newContainerName) ||
+                    EditorApplication.isPlayingOrWillChangePlaymode))
+                {
+                    if (GUILayout.Button("+ Create", EditorStyles.toolbarButton, GUILayout.Width(70f)))
+                    {
+                        GameObject created = UIStyleFactory.CreateEmptyContainer(parent, newContainerName);
+                        if (created != null)
+                        {
+                            // Unlike prefab instances, newly created empty containers
+                            // are valid parents and should become active immediately.
+                            lastCreatedComponent = null;
+                            SetTargetRoot((RectTransform)created.transform);
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>Draws a compact library selector for narrow windows.</summary>
@@ -308,9 +298,14 @@ namespace AdvancedUIToolkit.Editor
         /// <param name="profile">The profile to select.</param>
         private void SelectProfile(UIStyleProfile profile)
         {
+            effectiveTemplatesForGui = null;
             selectedProfile = profile;
             selectedIdentity = null;
             instanceName = string.Empty;
+            overrideDisplayedText = false;
+            selectedTextTargetIndex = 0;
+            selectedTextSourceComponent = null;
+            displayedText = string.Empty;
             mainScroll = Vector2.zero;
         }
 
@@ -318,6 +313,8 @@ namespace AdvancedUIToolkit.Editor
         /// <param name="parent">The current creation root.</param>
         private void DrawMain(RectTransform parent)
         {
+            // Cache only for this GUI event, never across frames or external profile edits.
+            effectiveTemplatesForGui = null;
             mainScroll = EditorGUILayout.BeginScrollView(mainScroll, GUILayout.ExpandHeight(true));
             if (selectedProfile == null)
             {
@@ -344,6 +341,7 @@ namespace AdvancedUIToolkit.Editor
 
             DrawGallery(parent);
             EditorGUILayout.EndScrollView();
+            effectiveTemplatesForGui = null;
         }
 
         /// <summary>Draws a single short profile header without fixed-width actions.</summary>
@@ -387,7 +385,8 @@ namespace AdvancedUIToolkit.Editor
                     using (new EditorGUI.DisabledScope(parent == null ||
                                                        EditorApplication.isPlayingOrWillChangePlaymode))
                     {
-                        if (GUILayout.Button("Apply To Root", EditorStyles.miniButton))
+                        if (GUILayout.Button(new GUIContent("Apply Profile", "Assign this style profile to the selected parent."),
+                            EditorStyles.miniButton))
                             AttachContext(parent, selectedProfile);
                     }
                 }
@@ -406,9 +405,22 @@ namespace AdvancedUIToolkit.Editor
                 }
                 showHelp = EditorGUILayout.Foldout(showHelp, "Help", true);
                 if (showHelp)
-                    EditorGUILayout.HelpBox("Choose a UI root, select a saved prefab, then Create. " +
+                    EditorGUILayout.HelpBox("Select any UI GameObject in the Hierarchy to choose the creation parent, " +
+                        "pick a saved prefab, then Create. " +
                         "Source prefab links and AutoBinder-compatible names are preserved.", MessageType.Info);
             }
+        }
+
+        /// <summary>
+        /// Resolves inherited prefab templates at most once per Library GUI event.
+        /// No persistent cache is kept: profile assets may be edited in other Inspectors.
+        /// </summary>
+        /// <returns>Effective templates for the selected profile.</returns>
+        private List<UIComponentTemplate> EffectiveTemplatesForGui()
+        {
+            if (effectiveTemplatesForGui == null)
+                effectiveTemplatesForGui = selectedProfile.GetEffectiveTemplates();
+            return effectiveTemplatesForGui;
         }
 
         /// <summary>Returns the currently visible component templates.</summary>
@@ -416,7 +428,7 @@ namespace AdvancedUIToolkit.Editor
         private List<UIComponentTemplate> VisibleTemplates()
         {
             List<UIComponentTemplate> entries = showInherited
-                ? selectedProfile.GetEffectiveTemplates()
+                ? EffectiveTemplatesForGui()
                 : selectedProfile.Templates.Where(x => x != null && x.Prefab != null).ToList();
             return entries.Where(t => t != null && t.Prefab != null &&
                     (filterAll || t.Kind == kindFilter) &&
@@ -436,6 +448,13 @@ namespace AdvancedUIToolkit.Editor
                 searchComponent = GUILayout.TextField(searchComponent,
                     GUI.skin.FindStyle("ToolbarSeachTextField") ?? EditorStyles.textField,
                     GUILayout.MinWidth(60), GUILayout.ExpandWidth(true));
+                if (!string.IsNullOrEmpty(searchComponent) &&
+                    GUILayout.Button(new GUIContent("×", "Clear component search"),
+                        EditorStyles.toolbarButton, GUILayout.Width(22f)))
+                {
+                    searchComponent = string.Empty;
+                    GUI.FocusControl(null);
+                }
                 filterAll = GUILayout.Toggle(filterAll, "All", EditorStyles.toolbarButton, GUILayout.Width(33f));
                 if (!filterAll)
                     kindFilter = (UIComponentKind)EditorGUILayout.EnumPopup(kindFilter,
@@ -446,8 +465,16 @@ namespace AdvancedUIToolkit.Editor
 
             if (templates.Count == 0)
             {
-                GUILayout.Label("No matching components. Add prefabs under Show More.",
+                GUILayout.Label(string.IsNullOrWhiteSpace(searchComponent) && filterAll
+                    ? "No prefab templates registered. Open Show More > Edit Profile to add one."
+                    : "No components match the current search/filter.",
                     EditorStyles.wordWrappedMiniLabel);
+                if ((!string.IsNullOrWhiteSpace(searchComponent) || !filterAll) &&
+                    GUILayout.Button("Clear Filters", EditorStyles.miniButton))
+                {
+                    searchComponent = string.Empty;
+                    filterAll = true;
+                }
             }
             else if (listView)
             {
@@ -482,10 +509,16 @@ namespace AdvancedUIToolkit.Editor
                 Rect preview = GUILayoutUtility.GetRect(cardWidth - 16f, 77f, GUILayout.Height(77f));
                 DrawPreview(preview, template.Prefab);
                 if (GUI.Button(preview, GUIContent.none, GUIStyle.none)) SelectTemplate(template);
-                GUILayout.Label(TemplateLabel(template), selected ? EditorStyles.boldLabel : EditorStyles.label);
+                if (GUILayout.Button(TemplateLabel(template),
+                    selected ? EditorStyles.miniButtonMid : EditorStyles.miniButton))
+                    SelectTemplate(template);
                 GUILayout.Label(template.Kind.ToString(), EditorStyles.miniLabel);
-                using (new EditorGUI.DisabledScope(parent == null || EditorApplication.isPlayingOrWillChangePlaymode))
-                    if (GUILayout.Button("Create", GUILayout.Height(20))) CreateTemplate(parent, template);
+                using (new EditorGUI.DisabledScope(!CanCreateQuickInstance(template, parent,
+                           selectedIdentity, instanceName, EditorApplication.isPlayingOrWillChangePlaymode)))
+                    if (GUILayout.Button(new GUIContent("Create", "Create using the selected name, or the prefab default."),
+                        GUILayout.Height(20)))
+                        CreateTemplate(parent, template, RequestedQuickInstanceName(template,
+                            selectedIdentity, instanceName), selectedIdentity == template.Identity);
             }
         }
 
@@ -494,8 +527,7 @@ namespace AdvancedUIToolkit.Editor
         /// <param name="parent">The current creation root.</param>
         private void DrawTemplateRow(UIComponentTemplate template, RectTransform parent)
         {
-            float rowWidth = Mathf.Max(260f, position.width - 28f);
-            using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox, GUILayout.Width(rowWidth)))
+            using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox, GUILayout.ExpandWidth(true)))
             {
                 Rect preview = GUILayoutUtility.GetRect(39f, 38f, GUILayout.Width(39f), GUILayout.Height(38f));
                 DrawPreview(preview, template.Prefab);
@@ -508,10 +540,49 @@ namespace AdvancedUIToolkit.Editor
                         SelectTemplate(template);
                     GUILayout.Label(template.Kind.ToString(), EditorStyles.miniLabel);
                 }
-                using (new EditorGUI.DisabledScope(parent == null || EditorApplication.isPlayingOrWillChangePlaymode))
-                    if (GUILayout.Button("Create", GUILayout.Width(58), GUILayout.Height(23)))
-                        CreateTemplate(parent, template);
+                using (new EditorGUI.DisabledScope(!CanCreateQuickInstance(template, parent,
+                           selectedIdentity, instanceName, EditorApplication.isPlayingOrWillChangePlaymode)))
+                    if (GUILayout.Button(new GUIContent("Create", "Create using the selected name, or the prefab default."),
+                        GUILayout.Width(58), GUILayout.Height(23)))
+                        CreateTemplate(parent, template, RequestedQuickInstanceName(template,
+                            selectedIdentity, instanceName), selectedIdentity == template.Identity);
             }
+        }
+
+        /// <summary>
+        /// Uses the edited instance name only for the currently selected prefab.
+        /// The other gallery entries keep their own registered default names.
+        /// </summary>
+        /// <param name="template">Prefab entry being created.</param>
+        /// <param name="selectedTemplateId">Currently selected entry identity.</param>
+        /// <param name="editedName">Current name editor text.</param>
+        /// <returns>An explicit name or null to use the template default.</returns>
+        internal static string RequestedQuickInstanceName(UIComponentTemplate template,
+            string selectedTemplateId, string editedName)
+        {
+            return template != null &&
+                   string.Equals(template.Identity, selectedTemplateId, StringComparison.Ordinal)
+                ? editedName : null;
+        }
+
+        /// <summary>
+        /// Prevents quick-create buttons from bypassing invalid names entered in the
+        /// selected component editor. Unselected prefabs use their registered defaults.
+        /// </summary>
+        /// <param name="template">Prefab entry being created.</param>
+        /// <param name="parent">Target root for instantiation.</param>
+        /// <param name="selectedTemplateId">Selected component identity.</param>
+        /// <param name="editedName">The edited instance name.</param>
+        /// <param name="isPlaying">Whether Unity is entering or in Play Mode.</param>
+        /// <returns>True if creating this entry is allowed.</returns>
+        internal static bool CanCreateQuickInstance(UIComponentTemplate template, RectTransform parent,
+            string selectedTemplateId, string editedName, bool isPlaying)
+        {
+            if (parent == null || template == null || template.Prefab == null || isPlaying)
+                return false;
+            string requested = RequestedQuickInstanceName(template, selectedTemplateId, editedName);
+            return requested == null || UIStyleFactory.IsValidDefaultName(requested,
+                template.Kind, out _);
         }
 
         /// <summary>Selects a component template.</summary>
@@ -523,6 +594,10 @@ namespace AdvancedUIToolkit.Editor
             {
                 selectedIdentity = template.Identity;
                 selectedDetailsExpanded = true;
+                overrideDisplayedText = false;
+                selectedTextTargetIndex = 0;
+                selectedTextSourceComponent = null;
+                displayedText = string.Empty;
                 instanceName = !string.IsNullOrWhiteSpace(template.DefaultObjectName)
                     ? template.DefaultObjectName
                     : template.Kind == UIComponentKind.Custom ? template.Prefab.name :
@@ -607,7 +682,7 @@ namespace AdvancedUIToolkit.Editor
                 {
                     if (component == null || component.GetType().FullName != "TMPro.TextMeshProUGUI")
                         continue;
-                    var textProperty = component.GetType().GetProperty("text");
+                    System.Reflection.PropertyInfo textProperty = component.GetType().GetProperty("text");
                     if (textProperty != null) label = textProperty.GetValue(component, null) as string;
                     break;
                 }
@@ -624,13 +699,105 @@ namespace AdvancedUIToolkit.Editor
         }
 
         /// <summary>
+        /// Offers one explicit label override for a prefab that contains supported
+        /// root or nested text. Multiple labels require an explicit target choice.
+        /// </summary>
+        /// <param name="prefab">Currently selected source prefab asset.</param>
+        private bool DrawTextOverrideEditor(GameObject prefab)
+        {
+            // Disabled entries are drawn on every GUI event. A cheap availability
+            // query avoids allocating paths, Target objects and original text when
+            // the user is not editing a displayed-text override.
+            if (!overrideDisplayedText && !UIPrefabTextOverride.HasTargets(prefab))
+                return true;
+
+            bool nextEnabled = EditorGUILayout.ToggleLeft("Override Displayed Text", overrideDisplayedText);
+            if (!nextEnabled)
+            {
+                overrideDisplayedText = false;
+                return true;
+            }
+
+            List<UIPrefabTextOverride.Target> targets = UIPrefabTextOverride.FindTargets(prefab);
+            if (!overrideDisplayedText && targets.Count > 0)
+            {
+                selectedTextTargetIndex = Mathf.Clamp(selectedTextTargetIndex, 0, targets.Count - 1);
+                selectedTextSourceComponent = targets[selectedTextTargetIndex].Component;
+                displayedText = targets[selectedTextTargetIndex].CurrentText;
+            }
+            overrideDisplayedText = true;
+
+            // Resolve the specific component, not its previous position in the list.
+            int currentIndex = targets.FindIndex(t => selectedTextSourceComponent != null &&
+                                                        t.Component == selectedTextSourceComponent);
+            if (currentIndex >= 0)
+            {
+                selectedTextTargetIndex = currentIndex;
+            }
+            else
+            {
+                EditorGUILayout.HelpBox("The selected prefab text component has changed or was removed. " +
+                    "Choose a new text target before creating another instance.", MessageType.Warning);
+                if (targets.Count > 0)
+                {
+                    string[] candidates = new[] { "Choose a new label..." }
+                        .Concat(targets.Select(t => t.Label)).ToArray();
+                    int newSelection = EditorGUILayout.Popup("New Text Target", 0, candidates);
+                    if (newSelection > 0 && newSelection <= targets.Count)
+                    {
+                        int resolvedIndex = newSelection - 1;
+                        selectedTextTargetIndex = resolvedIndex;
+                        selectedTextSourceComponent = targets[resolvedIndex].Component;
+                        displayedText = targets[resolvedIndex].CurrentText;
+                        currentIndex = resolvedIndex;
+                    }
+                }
+                if (currentIndex < 0) return false;
+            }
+            if (targets.Count > 1)
+            {
+                string[] targetNames = targets.Select(t => t.Label).ToArray();
+                int next = EditorGUILayout.Popup("Text Target", selectedTextTargetIndex, targetNames);
+                if (next != selectedTextTargetIndex)
+                {
+                    selectedTextTargetIndex = next;
+                    selectedTextSourceComponent = targets[next].Component;
+                    displayedText = targets[next].CurrentText;
+                }
+            }
+            else
+                EditorGUILayout.LabelField("Text Target", targets[0].Label, EditorStyles.miniLabel);
+
+            displayedText = EditorGUILayout.TextField("Displayed Text", displayedText);
+            return true;
+        }
+
+        /// <summary>
+        /// Builds a text override for the selected template only. An unselected
+        /// card always uses the source prefab text, even if another entry is edited.
+        /// </summary>
+        /// <param name="applyOverride">Whether this is the selected template.</param>
+        /// <returns>A disabled request or the text chosen in the detail editor.</returns>
+        private UIPrefabTextOverrideRequest BuildTextOverride(bool applyOverride)
+        {
+            return new UIPrefabTextOverrideRequest
+            {
+                Enabled = applyOverride && overrideDisplayedText,
+                TargetIndex = selectedTextTargetIndex,
+                Text = displayedText,
+                RequireSourceComponent = applyOverride && overrideDisplayedText,
+                SourceComponent = selectedTextSourceComponent
+            };
+        }
+
+        /// <summary>
         /// Shows the selected prefab in a compact horizontal summary. Extra state
         /// previews and asset actions are visible only if requested.
         /// </summary>
         /// <param name="parent">The current creation root.</param>
         private void DrawSelectedTemplateDetails(RectTransform parent)
         {
-            UIComponentTemplate template = selectedProfile.GetEffectiveTemplates()
+            UIComponentTemplate template = EffectiveTemplatesForGui()
                 .FirstOrDefault(t => t != null && t.Identity == selectedIdentity);
             if (template == null || template.Prefab == null)
             {
@@ -653,23 +820,31 @@ namespace AdvancedUIToolkit.Editor
                 }
             }
 
+            bool textTargetValid = DrawTextOverrideEditor(template.Prefab);
+
+            // Validate after the name field is edited, and retain the result beyond
+            // the horizontal layout scope for the inline error message below.
+            bool valid;
+            string reason;
             using (new EditorGUILayout.HorizontalScope())
             {
                 instanceName = EditorGUILayout.TextField(instanceName,
                     GUILayout.MinWidth(90f), GUILayout.ExpandWidth(true));
-                bool valid = UIStyleFactory.IsValidDefaultName(instanceName, template.Kind, out string reason);
-                using (new EditorGUI.DisabledScope(!valid || parent == null ||
+                valid = UIStyleFactory.IsValidDefaultName(instanceName, template.Kind, out reason);
+                using (new EditorGUI.DisabledScope(!valid || !textTargetValid || parent == null ||
                                                    EditorApplication.isPlayingOrWillChangePlaymode))
                 {
                     if (GUILayout.Button("Create", GUILayout.Width(74f), GUILayout.Height(22f)))
-                        CreateTemplate(parent, template, instanceName);
+                        CreateTemplate(parent, template, instanceName, true);
                 }
                 if (!valid) GUILayout.Label(new GUIContent("!", reason), EditorStyles.miniBoldLabel,
                     GUILayout.Width(12f));
             }
 
+            if (!valid)
+                GUILayout.Label(reason, EditorStyles.wordWrappedMiniLabel);
             if (parent == null)
-                GUILayout.Label("Select a UI root above to enable creation.", EditorStyles.wordWrappedMiniLabel);
+                GUILayout.Label("Select a UI GameObject as the parent to enable creation.", EditorStyles.wordWrappedMiniLabel);
 
             showPrefabActions = EditorGUILayout.Foldout(showPrefabActions, "Prefab Actions", true);
             if (showPrefabActions)
@@ -690,7 +865,8 @@ namespace AdvancedUIToolkit.Editor
         /// <param name="parent">The creation parent.</param>
         /// <param name="template">The template to instantiate.</param>
         /// <param name="name">An optional override name.</param>
-        private void CreateTemplate(RectTransform parent, UIComponentTemplate template, string name = null)
+        private void CreateTemplate(RectTransform parent, UIComponentTemplate template, string name = null,
+            bool useSelectedOverride = false)
         {
             if (parent == null || template == null) return;
             string fallback = template.Kind == UIComponentKind.Custom
@@ -699,7 +875,8 @@ namespace AdvancedUIToolkit.Editor
             isCreatingComponent = true;
             try
             {
-                lastCreatedComponent = UIStyleFactory.CreatePrefab(parent, template, fallback, name);
+                lastCreatedComponent = UIStyleFactory.CreatePrefab(parent, template, fallback, name,
+                    BuildTextOverride(useSelectedOverride));
             }
             finally
             {
@@ -766,6 +943,8 @@ namespace AdvancedUIToolkit.Editor
             }
             if (serialized.ApplyModifiedProperties())
             {
+                // The currently rendered profile changed; do not reuse its inherited list.
+                effectiveTemplatesForGui = null;
                 EditorUtility.SetDirty(selectedProfile);
                 Repaint();
             }
@@ -848,7 +1027,7 @@ namespace AdvancedUIToolkit.Editor
         {
             using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
             {
-                GUILayout.Label(parent != null ? "Root: " + parent.name : "No UI root selected", EditorStyles.miniLabel);
+                GUILayout.Label(parent != null ? "Parent: " + parent.name : "No UI parent selected", EditorStyles.miniLabel);
                 GUILayout.FlexibleSpace();
                 GUILayout.Label(selectedProfile != null ? "Library: " + selectedProfile.name : "No library selected", EditorStyles.miniLabel);
             }

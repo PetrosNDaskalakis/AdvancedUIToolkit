@@ -6,7 +6,6 @@
 
 - **Unity 2022.3 or later** (declared minimum; verify compatibility with the exact Unity release your team uses).
 - Unity's **uGUI** package (`com.unity.ugui`), declared as a package dependency.
-- Unity Test Framework if you want to run the included EditMode and PlayMode tests.
 - The Advanced UI Toolkit package folder containing `package.json`, `Runtime/`, and `Editor/`.
 
 The package is **Advanced UI Toolkit** throughout: Unity package `com.advanceduitoolkit.framework`, C# namespace `AdvancedUIToolkit`, and assemblies `AdvancedUIToolkit.Runtime` and `AdvancedUIToolkit.Editor`. Updating an older game requires a source migration; see the [migration guide](MIGRATION_TO_ADVANCED_UI_TOOLKIT.md).
@@ -36,7 +35,6 @@ MyUnityProject/
 │       ├── package.json
 │       ├── Runtime/
 │       ├── Editor/
-│       ├── Tests/
 │       ├── Samples~/
 │       └── Documentation~/
 └── ProjectSettings/
@@ -62,7 +60,7 @@ Do not copy this placeholder as a real package URL. If the UPM package lives in 
 4. Rename its root GameObject `BTN_Test`.
 5. Open **Binder**, select the Panel, and verify `Test` is discovered.
 6. Preview and generate its binding class; check that the generated property exists.
-7. Run a PlayMode test with a `UIView<TBindings>` component on the same GameObject.
+7. Enter Play Mode with a `UIView<TBindings>` component on the same GameObject and verify expected interactions.
 
 **Expected result:** no compiler errors, a valid generated binding reference, and working UI click events.
 
@@ -78,7 +76,7 @@ Open **Window → Package Manager**, select Advanced UI Toolkit, and look for **
 4. Replace the older package with **one** `com.advanceduitoolkit.framework` package. **Preserve existing `.meta` GUIDs** for C# scripts referenced by scenes and prefabs.
 5. Keep generated classes and project-specific UI prefabs/Style Profiles under `Assets/`.
 6. Reopen Unity, check Console errors, and verify Binder/Factory and a representative panel.
-7. Run EditMode tests, PlayMode tests, and a player build before promoting a release to production.
+7. Execute the manual [release checklist](TEST_PLAN.md), profile representative UI interactions with Unity Profiler, and complete a player build before promoting a release to production.
 
 > **Pre-UPM installs:** Do not delete GUID-bearing Runtime/Editor scripts and import duplicates. Preserve `.meta` GUIDs, remove old copies only after backing up, and verify each scene and prefab in Unity.
 
@@ -96,9 +94,8 @@ Existing project paths are not automatically moved during installation. Use the 
 
 ## Tests and sign-off
 
-- Open **Window → General → Test Runner** for EditMode/PlayMode tests.
-- If package tests aren't discovered, add `"testables": ["com.advanceduitoolkit.framework"]` to your project `Packages/manifest.json` while preserving its other entries.
+- Open **Window → Analysis → Profiler** for performance measurements in your own scenes.
 - From package root, run `python3 Tools~/verify_package.py` to perform a static structural audit (this does not compile Unity C#).
 - Check a player build for your target platform and the exact Unity version your team supports.
 
-**Release note:** `1.0.0-rc.13` is a release candidate. It has not been certified production-ready by the package metadata alone.
+**Release note:** The `1.1.0` package is packaged for stable-version acceptance, but this specific archive has **not** been signed off through a clean Unity install and target-platform player build. Follow the [v1.1.0 package notes](V1_1_STABLE_RELEASE_NOTES.md) and [final acceptance checklist](V1_1_STABLE_ACCEPTANCE.md) before deployment.

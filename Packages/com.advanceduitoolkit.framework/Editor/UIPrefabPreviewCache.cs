@@ -22,7 +22,13 @@ namespace AdvancedUIToolkit.Editor
         /// <summary>Defines the preview height constant.</summary>
         private const int PreviewHeight = 512;
         /// <summary>Defines the max pending constant.</summary>
-        private const int MaxPending = 48;
+        private const int MaxPending = 16;
+        /// <summary>
+        /// Maximum number of cached preview entries. At 1024 x 512 RGBA32, 64
+        /// textures need roughly 128 MiB of GPU storage, not counting render overhead.
+        /// This is a ceiling rather than preallocated memory.
+        /// </summary>
+        internal const int MaxCachedEntries = 64;
         /// <summary>Defines the capture interval seconds constant.</summary>
         private const double CaptureIntervalSeconds = 0.12;
 
@@ -33,6 +39,8 @@ namespace AdvancedUIToolkit.Editor
             internal Texture2D Texture;
             /// <summary>Stores the finished reference or configuration value.</summary>
             internal bool Finished;
+            /// <summary>Monotonic access sequence for least-recently-used eviction.</summary>
+            internal long LastAccess;
         }
 
         /// <summary>Defines the preview request struct.</summary>
@@ -51,6 +59,8 @@ namespace AdvancedUIToolkit.Editor
         private static readonly Queue<PreviewRequest> Requests = new Queue<PreviewRequest>();
         /// <summary>Stores the next capture time reference or configuration value.</summary>
         private static double nextCaptureTime;
+        /// <summary>Increasing cache access number; independent of editor wall-clock time.</summary>
+        private static long accessSequence;
 
         /// <summary>Notifies listeners when updated occurs.</summary>
         internal static event Action Updated;
@@ -75,15 +85,39 @@ namespace AdvancedUIToolkit.Editor
             string key = path;
             if (!Cache.TryGetValue(key, out CacheEntry entry))
             {
-                // Do not queue hundreds of hidden gallery items. Retry on a later repaint.
-                if (Requests.Count < MaxPending)
-                {
-                    Cache[key] = new CacheEntry();
-                    Requests.Enqueue(new PreviewRequest { Prefab = prefab, Key = key });
-                }
+                // Refuse extra queue work until older previews finish. Keep high-quality
+                // thumbnails, but never allow an unbounded collection of 2 MiB images.
+                if (Requests.Count >= MaxPending) return null;
+                if (Cache.Count >= MaxCachedEntries && !EvictLeastRecentlyUsed())
+                    return null;
+                Cache[key] = new CacheEntry { LastAccess = ++accessSequence };
+                Requests.Enqueue(new PreviewRequest { Prefab = prefab, Key = key });
                 return null;
             }
+            entry.LastAccess = ++accessSequence;
             return entry.Finished ? entry.Texture : null;
+        }
+
+        /// <summary>
+        /// Evicts the least-recently-used completed entry. Pending captures are never
+        /// evicted, so their queued requests still correspond to valid dictionary keys.
+        /// </summary>
+        /// <returns>True when a completed entry was removed.</returns>
+        private static bool EvictLeastRecentlyUsed()
+        {
+            string keyToRemove = null;
+            long oldest = long.MaxValue;
+            foreach (KeyValuePair<string, CacheEntry> pair in Cache)
+            {
+                if (!pair.Value.Finished || pair.Value.LastAccess >= oldest) continue;
+                keyToRemove = pair.Key;
+                oldest = pair.Value.LastAccess;
+            }
+            if (keyToRemove == null) return false;
+            CacheEntry entry = Cache[keyToRemove];
+            Cache.Remove(keyToRemove);
+            if (entry.Texture != null) UnityEngine.Object.DestroyImmediate(entry.Texture);
+            return true;
         }
 
         /// <summary>Performs the clear operation.</summary>
@@ -93,6 +127,7 @@ namespace AdvancedUIToolkit.Editor
             foreach (CacheEntry entry in Cache.Values)
                 if (entry.Texture != null) UnityEngine.Object.DestroyImmediate(entry.Texture);
             Cache.Clear();
+            accessSequence = 0;
             Updated?.Invoke();
         }
 
@@ -193,19 +228,19 @@ namespace AdvancedUIToolkit.Editor
                 preview.Render(true);
                 Texture2D result = preview.EndStaticPreview();
 
-                if (result != null)
-                {
-                    result.filterMode = FilterMode.Bilinear;
-                    result.wrapMode = TextureWrapMode.Clamp;
-                    result.Apply(false, false);
-                }
-
-                // An entirely blank capture can occur with unsupported SRP previews.
-                // In that case return null and let Unity's thumbnail be the fallback.
+                // Detect unsupported SRP captures while the pixels remain readable.
                 if (result != null && IsBlank(result))
                 {
                     UnityEngine.Object.DestroyImmediate(result);
                     return null;
+                }
+                if (result != null)
+                {
+                    result.filterMode = FilterMode.Bilinear;
+                    result.wrapMode = TextureWrapMode.Clamp;
+                    // No CPU pixel access is needed after blank-capture inspection.
+                    // Free the readable copy and retain the full-resolution GPU image.
+                    result.Apply(false, true);
                 }
                 return result;
             }

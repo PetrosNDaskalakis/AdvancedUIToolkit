@@ -1,8 +1,8 @@
 {
   "name": "com.advanceduitoolkit.framework",
-  "version": "1.0.0-rc.13",
+  "version": "1.1.5",
   "displayName": "Advanced UI Toolkit",
-  "description": "Portable Unity uGUI authoring framework: automatic typed component bindings, reusable prefab libraries, Undo-aware generation, and streamlined Binder/Factory tools.",
+  "description": "Portable Unity uGUI authoring framework with extensible Editor-only component registrations, public batch creation and headless binding APIs.",
   "unity": "2022.3",
   "keywords": [
     "ugui",

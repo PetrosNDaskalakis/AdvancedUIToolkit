@@ -36,7 +36,7 @@ namespace AdvancedUIToolkit.Editor
         {
             if (string.IsNullOrEmpty(path)) throw new ArgumentException("Missing destination.", nameof(path));
             if (nextSource == null) throw new ArgumentNullException(nameof(nextSource));
-            var window = GetWindow<AdvancedUIToolkitGenerationPreviewWindow>("Binding C# Preview");
+            AdvancedUIToolkitGenerationPreviewWindow window = GetWindow<AdvancedUIToolkitGenerationPreviewWindow>("Binding C# Preview");
             window.destination = path;
             window.proposed = nextSource;
             window.current = existingSource;

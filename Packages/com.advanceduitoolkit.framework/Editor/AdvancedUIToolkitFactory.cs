@@ -70,7 +70,7 @@ namespace AdvancedUIToolkit.Editor
         /// <summary>Creates rect.</summary>
         [MenuItem("GameObject/Advanced UI Toolkit/RectTransform (Empty)", false, 12)]
         private static void CreateRect(MenuCommand command) =>
-            Create(command, UIComponentKind.RectTransform, "RT_Container", _ => new GameObject("Container", typeof(RectTransform)));
+            UIStyleFactory.CreateEmptyContainer(UIStyleFactory.GetParent(command), "Container");
 
         /// <summary>Creates value.</summary>
         private static void Create(
@@ -87,11 +87,9 @@ namespace AdvancedUIToolkit.Editor
 
             // MenuCommand.context is used for Hierarchy right-click creation.
             // Fall back to current selection when invoked from the top menu.
-            GameObject context = command != null ? command.context as GameObject : null;
-            Transform selected = context != null ? context.transform : Selection.activeTransform;
-            RectTransform parent = selected as RectTransform;
+            RectTransform parent = UIStyleFactory.GetParent(command);
 
-            if (parent == null || EditorUtility.IsPersistent(parent.gameObject))
+            if (parent == null)
             {
                 Debug.LogWarning(
                     "Advanced UI Toolkit Factory: Select a Canvas, Panel, or other RectTransform " +
@@ -101,19 +99,24 @@ namespace AdvancedUIToolkit.Editor
 
             // When a style profile provides a prefab for this role, use it.
             // A missing role falls back to Unity's regular configured uGUI control.
-            if (UIStyleFactory.TryCreateStyled(parent, kind, baseName, out var styled))
+            if (UIStyleFactory.TryCreateStyled(parent, kind, baseName, out GameObject styled))
                 return;
 
+            // A native Unity default control must have the same isolated Undo
+            // behavior as a styled prefab or empty container. Starting a new group
+            // AFTER creating the control could merge its creation with a previous edit.
+            Undo.IncrementCurrentGroup();
+            int undoGroup = Undo.GetCurrentGroup();
+            Undo.SetCurrentGroupName("Advanced UI Toolkit: Create " + baseName);
             GameObject created = factory(BuildResources());
             if (created == null)
             {
                 Debug.LogError("Advanced UI Toolkit Factory: Failed to create " + baseName);
+                Undo.CollapseUndoOperations(undoGroup);
                 return;
             }
 
-            // Use one Undo operation for creation of the complete UI hierarchy.
-            int undoGroup = Undo.GetCurrentGroup();
-            Undo.SetCurrentGroupName("Advanced UI Toolkit: Create " + baseName);
+            // Keep parenting and naming in the same Undo step as creation.
 
             // Unity's recommended Editor parenting preserves layers/alignment.
             GameObjectUtility.SetParentAndAlign(created, parent.gameObject);

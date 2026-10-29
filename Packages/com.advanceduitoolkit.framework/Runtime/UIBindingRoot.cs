@@ -27,6 +27,12 @@ namespace AdvancedUIToolkit
             /// <summary>Full type name used by the generated accessor.</summary>
             public string ComponentType;
 
+            /// <summary>
+            /// Optional, per-property XML summary authored in Binder. An empty value uses
+            /// the selected generation template's default documentation pattern.
+            /// </summary>
+            public string XmlSummary;
+
             /// <summary>Serialized reference to the actual Unity component.</summary>
             public Component Reference;
         }
@@ -95,7 +101,7 @@ namespace AdvancedUIToolkit
         /// <summary>Populates the lookup from the serialized manifest without hierarchy searches.</summary>
         private void RebuildLookup()
         {
-            var rebuilt = new Dictionary<string, Component>(StringComparer.Ordinal);
+            Dictionary<string, Component> rebuilt = new Dictionary<string, Component>(StringComparer.Ordinal);
             if (entries != null)
             {
                 foreach (Entry entry in entries)
