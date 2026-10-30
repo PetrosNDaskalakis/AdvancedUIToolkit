@@ -1,5 +1,7 @@
 # Technical Overview
 
+[Documentation index](INDEX.md)
+
 [← README](../README.md) · [Architecture](ARCHITECTURE.md) · [API Reference](API_REFERENCE.md)
 
 ## Design objective
@@ -10,7 +12,7 @@ Its central trade-off is deliberate: a team adopts naming conventions and an Edi
 
 ## 1. Why use generated code instead of runtime reflection?
 
-The Builder/Factory already knows which objects exist in the Unity hierarchy. Rather than repeatedly searching for them at runtime, Binder uses the Editor to build a serialized manifest and generate typed C# accessors.
+The Builder/Library already knows which objects exist in the Unity hierarchy. Rather than repeatedly searching for them at runtime, Binder uses the Editor to build a serialized manifest and generate typed C# accessors.
 
 The result is familiar C# autocomplete and direct property access:
 
@@ -35,28 +37,12 @@ Developers may preserve the previous public property name after a GameObject ren
 
 ## 4. Generation pipeline
 
-```text
-Hierarchy or prefab change
-        ↓
-Detect selected owning UIBindingRoot
-        ↓
-Scan names, types, and nested scopes
-        ↓
-Compare with current serialized manifest
-        ↓
-Validate duplicates, missing components,
-unsafe prefab edits, output ownership, template validity
-        ↓
-Preview the proposed source and changes
-        ↓
-Manual approval OR allowed automatic generation
-        ↓
-Write generated C# to the project Assets folder
-        ↓
-Commit serialized manifest and generation profile
-        ↓
-Unity imports / compiles modified C#
-```
+1. Detect a hierarchy or prefab change and identify the configured binding root.
+2. Scan names, types and nested scopes; compare with the serialized manifest.
+3. Validate identifiers, component matches, prefab safety, output ownership and template validity.
+4. Preview proposed changes for manual review, or proceed through allowed Automatic generation.
+5. Write generated C# and commit the manifest/generation profile after successful validation.
+6. Let Unity import and compile the modified C#.
 
 The order of guarded file writes and manifest changes matters: if output is unsafe or ownership is ambiguous, generation should stop rather than corrupt another screen's generated file.
 
@@ -83,7 +69,7 @@ The first marker belongs inside the class; the second inside `Initialize(UIBindi
 
 ## 7. Prefab libraries and styling
 
-`UIStyleProfile` holds prefab templates by component role and can inherit a base profile. A derived profile overrides a role or custom ID, allowing a game to share common station controls while overriding specific designs. Factory instantiates linked prefab assets, retaining ordinary Unity prefab override behavior.
+`UIStyleProfile` holds prefab templates by component role and can inherit a base profile. A derived profile overrides a role or custom ID, allowing a game to share common station controls while overriding specific designs. Library instantiates linked prefab assets, retaining ordinary Unity prefab override behavior.
 
 A Style Profile selects *which prefab to create*. It does not become a reactive runtime stylesheet, control the game's UI state, or replace a design system.
 
@@ -116,12 +102,8 @@ Compare one representative 20–50-component screen built with normal Inspector 
 | Time to onboard a new developer | Tests whether the tool is simpler than the workflow it replaces |
 | Player build and package compatibility | Establishes basic adoption readiness |
 
-## 11. Current limitations and next research area
+## 11. Scope and optional Layouts
 
-This v1.0 release candidate provides **component reference binding**, not reactive game-data binding, JSON-generated UI layouts, screen navigation, or universal UI across rendering backends.
+Framework provides component-reference binding, prefab authoring and view lifecycle helpers. Reactive game-data binding, screen navigation and runtime theming are outside its scope.
 
-A future optional schema system could define prefab choices, parent–child relationships, and layout metadata in a structured format such as JSON, then construct initial uGUI hierarchies using existing Style Profiles. Safe bidirectional synchronization and migration rules would need separate design and testing.
-
-## Publication readiness
-
-Before a public GitHub release, confirm the copyright owner, remove any proprietary assets, approve a license, and run the full Unity acceptance checklist. The package has a release-candidate version; passing static checks is not the same as player-build or Editor verification.
+The optional Authoring package supplies Layouts for reusable hierarchy molds and retained JSON compatibility tools. Library places control prefabs; Layouts creates containers; Binder generates references. See [Layouts architecture](../../com.advanceduitoolkit.authoring/Documentation~/ARCHITECTURE.md) and [Testing](TESTING.md).

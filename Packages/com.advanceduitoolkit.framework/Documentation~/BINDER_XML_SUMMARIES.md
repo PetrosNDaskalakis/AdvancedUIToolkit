@@ -1,8 +1,8 @@
 # Binder: per-property XML summaries
 
-[← Documentation Index](INDEX.md) · [Developer Handbook](DEVELOPER_HANDBOOK.md) · [Foundation Roadmap](FOUNDATION_ROADMAP.md)
+[← Documentation Index](INDEX.md) · [Developer Handbook](DEVELOPER_HANDBOOK.md)
 
-**Added in Advanced UI Toolkit v1.1.0-preview.1.** This is the only new feature planned for the current foundation cycle.
+Binder stores per-property XML summaries and includes them in generated C# documentation.
 
 ## Quick workflow
 
@@ -48,7 +48,7 @@ public UnityEngine.UI.Button Fire { get; private set; }
 
 With a representative panel, verify that comments appear in the C# preview, persist after saving/reopening, survive a rename, and remain intact after deleting and undoing another control. Verify both the default generator and a custom code-generation template.
 
-## Duplicating components safely (Preview 2)
+## Duplicating components safely
 
 When Unity creates a duplicate named `BTN_Fire (1)` with **Ctrl+D**, opening or updating Binder normalizes that name to `BTN_Fire_2` (or the next available number). This prevents the invalid generated property name `Fire (1)` from blocking **Preview C#** and **Generate Changes**.
 

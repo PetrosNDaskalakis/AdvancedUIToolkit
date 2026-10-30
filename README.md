@@ -1,167 +1,96 @@
-[README.md](https://github.com/user-attachments/files/33971741/README.md)
 # Advanced UI Toolkit
 
-**Build Unity uGUI interfaces faster, with fewer manual references and more reusable components.**
+Build reusable Unity uGUI screens with prefab libraries, reusable container layouts and generated C# bindings.
 
-Advanced UI Toolkit is a modular, editor-focused framework that helps Unity developers **create, organize, bind, and maintain uGUI interfaces**. It combines a reusable UI component library with automatic component discovery, strongly typed C# binding generation, and validation tools.
+Advanced UI Toolkit keeps visual authoring in Unity. **Library** places your saved control prefabs, **Layouts** captures and recreates container structures, and **Binder** connects those controls to typed gameplay code.
 
-It **does not replace Unity's UI system**. Your Canvas, Buttons, Toggles, prefabs, and MonoBehaviours continue working as normal—it automates the repetitive setup around them.
+## Packages
 
-**Current release:** `1.0.0-rc.10` (release candidate) · **Unity:** 2022.3+ · **UI:** uGUI · **Package ID:** `com.uicore.framework`
+| Package | Version | Purpose |
+| --- | --- | --- |
+| [Framework](Packages/com.advanceduitoolkit.framework/README.md) | `1.2.0-preview.3` | Library, Binder, generated bindings and runtime view lifecycle |
+| [Authoring / Layouts](Packages/com.advanceduitoolkit.authoring/README.md) | `0.5.0-preview.8` | Reusable hierarchy molds and optional JSON authoring tools |
 
-> **Project status:** This is a release candidate, not yet a production-verified stable release. Source publication and the final open-source license are subject to ownership/permission review.
+Framework works on its own. Install Authoring alongside it to enable Layouts. Both packages declare Unity **2022.3** as their minimum and depend on uGUI. The version identifiers above are preview versions; compatibility with your exact Editor version and player target should be verified in your project.
 
-<!-- Optional repository cover image: Documentation~/Images/00-cover.png -->
+## Main tools
 
-## The problem with the usual Unity UI workflow
-
-Unity's built-in uGUI and Prefab tools are capable, but UI-heavy projects often involve a lot of repeated setup:
-
-- Declaring dozens of `Button`, `Text`, `Toggle`, and other component fields in C#.
-- Dragging every reference from the Hierarchy into the Inspector.
-- Repeating the same component designs and setup across screens.
-- Manually fixing references and event subscriptions as interfaces change.
-- Keeping different developers' naming, organization, and code patterns consistent.
-
-The effort increases in games and simulators with multiple menus, stations, and complex control panels. Unity already provides prefabs and layout systems; the missing piece addressed here is **a consistent, automated workflow for discovering and using those UI components in code**.
-
-## How Advanced UI Toolkit helps
-
-| Tool | What it does |
+| Open from Tools → Advanced UI Toolkit | Use it to |
 | --- | --- |
-| **UI Library / Factory** | Creates named uGUI controls or instances of your team's reusable prefab designs. |
-| **Binder** | Scans a selected UI root and recognizes components using naming conventions such as `BTN_Fire`. |
-| **C# Generator** | Creates documented, strongly typed references such as `UI.Fire`—no manual Inspector field assignments. |
-| **Style Profiles** | Organizes separate component libraries for menus, stations, and other visual styles, with inheritance. |
-| **Validation & Rename Support** | Reports naming conflicts, missing references, and changes that could break generated code. |
-| **Manual / Automatic Generation** | Lets you choose when C# files change and Unity recompiles. |
+| **Library** | Browse, search and filter prefab templates; choose a target container; create linked prefab instances using a Style Profile |
+| **Layouts** | Capture an eligible scene hierarchy, inspect omissions, save a reusable mold and create an independent layout |
+| **Binder** | Discover named controls, review changes, preview generated C# and generate typed component accessors |
 
-**The result:** less repetitive wiring, more consistent UI prefabs, and more time spent on game functionality and interface design.
+Layouts captures ordinary scene RectTransforms and their supported components. Prefab branches and non-RectTransform branches are excluded in full. References inside the retained structure are remapped; references to external assets or omitted objects are cleared and reported. Add complete prefab controls with Library after creating the layout. See [mold behavior and limits](Packages/com.advanceduitoolkit.authoring/Documentation~/HIERARCHY_MOLDS.md).
 
-## Quick start: build your first bound UI
+## Install
 
-Follow this flow once to understand the main workflow:
+1. Save your Unity project and close the Editor.
+2. Copy `Packages/com.advanceduitoolkit.framework` into your project's `Packages` folder.
+3. For Layouts, also copy `Packages/com.advanceduitoolkit.authoring` alongside it.
+4. Reopen Unity and allow package import and compilation to finish.
+5. Open **Tools → Advanced UI Toolkit → Library**, **Layouts** or **Binder**.
 
-**Install → Create UI → Name controls → Bind → Generate → Use in C#**
+Copy the package directories, keeping their `.meta` files. Keep your project's own `Packages/manifest.json` and `packages-lock.json`; the supplied project files are not a universal dependency configuration. For upgrades, replace the complete toolkit package directories so obsolete files are removed. Do not keep duplicate package scripts under `Assets` or install the former standalone Integration package alongside Authoring.
 
-### 1. Install the package
+Alternative installation and upgrade instructions: [Framework](Packages/com.advanceduitoolkit.framework/Documentation~/INSTALLATION.md) · [Layouts](Packages/com.advanceduitoolkit.authoring/Documentation~/INSTALLATION.md).
 
-Add Advanced UI Toolkit using Unity's **Package Manager → + → Add package from disk**, selecting the package's `package.json`. Alternatively, use it as an embedded package at `Packages/com.uicore.framework/`.
+## Build your first screen
 
-Open **Tools → Advanced UI Toolkit → Binder** and **Tools → Advanced UI Toolkit → Factory**.
-
-> **Screenshot 01 — Installation**  
-> *Add your image here:* `Documentation~/Images/01-installation.png`  
-> Capture: Unity Package Manager showing Advanced UI Toolkit and its available samples.
-
-### 2. Create a panel and its controls
-
-Create a Canvas and a panel called `WeaponPanel`. Add a `UIBindingRoot` component to that panel. Create buttons through **GameObject → Advanced UI Toolkit → Button** or through **Factory**.
-
-Give the button GameObjects clear names following the prefix convention:
-
-```text
-Canvas
-└── WeaponPanel  [UIBindingRoot]
-    ├── BTN_Arm   [Button]
-    ├── BTN_Fire  [Button]
-    └── BTN_Load  [Button]
-```
-
-> **Screenshot 02 — Factory and Hierarchy**  
-> *Add your image here:* `Documentation~/Images/02-factory-hierarchy.png`  
-> Capture: Factory on one side and the `WeaponPanel` hierarchy with three named buttons.
-
-### 3. Let Binder discover the references
-
-Select `WeaponPanel`, then open **Tools → Advanced UI Toolkit → Binder**. Binder lists the recognized components, pending changes, and validation messages.
-
-`BTN_Arm` becomes the C# property `Arm`; `BTN_Fire` becomes `Fire`.
-
-> **Screenshot 03 — Binder**  
-> *Add your image here:* `Documentation~/Images/03-binder-scan.png`  
-> Capture: Binder with `WeaponPanel` selected, the three components listed, and no errors.
-
-### 4. Preview and generate the C# class
-
-Click **Preview C#** to inspect the proposed output. Then choose **Generate Bindings** (or **Generate Changes** for an existing root).
-
-A generated `WeaponPanelBindings` class will expose cached references to your buttons. By default, generated files live under `Assets/AdvancedUIToolkit/Generated/`.
-
-> **Screenshot 04 — Generated bindings**  
-> *Add your image here:* `Documentation~/Images/04-generated-code.png`  
-> Capture: the C# preview beside the generated `WeaponPanelBindings.cs` file in the Project window.
-
-### 5. Use the generated references
-
-Create a script on the same GameObject as `UIBindingRoot`:
+1. Create a Canvas and an ordinary panel hierarchy. Optionally capture it in **Layouts → Create New Layout**, inspect the result, choose a destination and create a new layout. **Load Layout** reuses saved molds.
+2. Create a **Style Profile** from **Assets → Create → Advanced UI Toolkit → Style Profile**. Register your saved uGUI control prefabs and choose the profile in **Library**.
+3. Choose an eligible container and create a Button named `BTN_Fire`.
+4. Add `UIBindingRoot` to the screen root. In **Binder**, select that root, configure the binding class as `WeaponPanelBindings`, namespace `Game.UI.Generated` and an output folder under `Assets`, then review and generate.
+5. After Unity compiles the generated class, add this view to the same root:
 
 ```csharp
-using UnityEngine;
-using UICore;
+using AdvancedUIToolkit;
 using Game.UI.Generated;
+using UnityEngine;
 
-/// <summary>Handles the weapon panel's three buttons.</summary>
 public sealed class WeaponPanel : UIView<WeaponPanelBindings>
 {
-    /// <summary>Registers managed button callbacks once.</summary>
     protected override void OnInitialize()
     {
-        Events.BindClick(UI.Arm, OnArm);
         Events.BindClick(UI.Fire, OnFire);
-        Events.BindClick(UI.Load, OnLoad);
     }
 
-    /// <summary>Handles the Arm button.</summary>
-    private void OnArm() => Debug.Log("Arm pressed");
-
-    /// <summary>Handles the Fire button.</summary>
-    private void OnFire() => Debug.Log("Fire pressed");
-
-    /// <summary>Handles the Load button.</summary>
-    private void OnLoad() => Debug.Log("Load pressed");
+    private void OnFire() => Debug.Log("Fire");
 }
 ```
 
-No serialized button fields. No manual reference assignments. Managed button listeners are cleaned up by the view lifecycle.
-
-> **Screenshot 05 — Working result**  
-> *Add your image here:* `Documentation~/Images/05-playmode-test.png`  
-> Capture: the working panel in Play Mode with the corresponding Console log messages.
-
-### 6. Reuse your designs with Style Profiles
-
-Save a custom `SonarButton.prefab`, create a **Style Profile**, and register it in the **UI Library**. A Sonar Station can use green tactical controls, while the Main Menu uses an entirely different design. Both still use the same Binder workflow.
-
-> **Screenshot 06 — Reusable library**  
-> *Add your image here:* `Documentation~/Images/06-style-profiles.png`  
-> Capture: two different Style Profiles or station designs using their own prefab controls.
-
-For a complete walkthrough, see the [Developer Handbook](Packages/com.advanceduitoolkit.framework/Documentation~/DEVELOPER_HANDBOOK.md).
+Managed listeners suspend when the view is disabled and resume when it is enabled. Register them once in `OnInitialize`; use the view lifecycle hooks instead of hiding Unity's `Awake`, `OnEnable`, `OnDisable` or `OnDestroy` methods.
 
 ## Documentation
 
-| Guide | Contents |
-| --- | --- |
-| [Installation](Packages/com.advanceduitoolkit.framework/Documentation~/INSTALLATION.md) | Requirements, UPM installation, upgrades, and initial verification |
-| [Developer Handbook](Packages/com.advanceduitoolkit.framework/Documentation~/DEVELOPER_HANDBOOK.md) | Daily workflows, naming rules, prefabs, Style Profiles, generation modes, and templates |
-| [Architecture](Packages/com.advanceduitoolkit.framework/Documentation~/ARCHITECTURE.md) | Framework modules, Editor/runtime separation, binding manifests, and data flow |
-| [Technical Overview](Packages/com.advanceduitoolkit.framework/Documentation~/TECHNICAL_OVERVIEW.md) | Design decisions, generation pipeline, performance considerations, and limitations |
-| [API Reference](Packages/com.advanceduitoolkit.framework/Documentation~/API_REFERENCE.md) | `UIBindingRoot`, `UIView<T>`, `UIEventScope`, Style Profiles, and examples |
-| [Troubleshooting](Packages/com.advanceduitoolkit.framework/Documentation~/TROUBLESHOOTING.md) | Common compilation, generation, prefab, Undo/Redo, and Editor issues |
-| [Documentation Index](Packages/com.advanceduitoolkit.framework/Documentation~/INDEX.md) | All guides in one place |
+| Guide | Framework | Layouts |
+| --- | --- | --- |
+| Documentation index | [Index](Packages/com.advanceduitoolkit.framework/Documentation~/INDEX.md) | [Index](Packages/com.advanceduitoolkit.authoring/Documentation~/INDEX.md) |
+| Installation | [Install](Packages/com.advanceduitoolkit.framework/Documentation~/INSTALLATION.md) | [Install](Packages/com.advanceduitoolkit.authoring/Documentation~/INSTALLATION.md) |
+| Getting started | [Quick start](Packages/com.advanceduitoolkit.framework/Documentation~/GETTING_STARTED.md) | [Quick start](Packages/com.advanceduitoolkit.authoring/Documentation~/GETTING_STARTED.md) |
+| Developer handbook | [Handbook](Packages/com.advanceduitoolkit.framework/Documentation~/DEVELOPER_HANDBOOK.md) | [Handbook](Packages/com.advanceduitoolkit.authoring/Documentation~/DEVELOPER_HANDBOOK.md) |
+| Architecture | [Architecture](Packages/com.advanceduitoolkit.framework/Documentation~/ARCHITECTURE.md) | [Architecture](Packages/com.advanceduitoolkit.authoring/Documentation~/ARCHITECTURE.md) |
+| Technical overview | [Overview](Packages/com.advanceduitoolkit.framework/Documentation~/TECHNICAL_OVERVIEW.md) | [Overview](Packages/com.advanceduitoolkit.authoring/Documentation~/TECHNICAL_OVERVIEW.md) |
+| API reference | [API](Packages/com.advanceduitoolkit.framework/Documentation~/API_REFERENCE.md) | [API](Packages/com.advanceduitoolkit.authoring/Documentation~/API_REFERENCE.md) |
+| Troubleshooting | [Help](Packages/com.advanceduitoolkit.framework/Documentation~/TROUBLESHOOTING.md) | [Help](Packages/com.advanceduitoolkit.authoring/Documentation~/TROUBLESHOOTING.md) |
+| Migration | [Upgrade](Packages/com.advanceduitoolkit.framework/Documentation~/MIGRATION.md) | [Upgrade](Packages/com.advanceduitoolkit.authoring/Documentation~/MIGRATION.md) |
+| Testing | [Verification](Packages/com.advanceduitoolkit.framework/Documentation~/TESTING.md) | [Verification](Packages/com.advanceduitoolkit.authoring/Documentation~/TESTING.md) |
+| Changelog | [Changes](Packages/com.advanceduitoolkit.framework/CHANGELOG.md) | [Changes](Packages/com.advanceduitoolkit.authoring/CHANGELOG.md) |
 
-## Important notes
+JSON layouts, stylesheets and integration records remain available under **Tools → Advanced UI Toolkit → Compatibility**. Start with the [compatibility documentation](Packages/com.advanceduitoolkit.authoring/Documentation~/INDEX.md#json-compatibility) when maintaining an existing JSON workflow.
 
-- **Reference binding is not data binding.** The toolkit exposes UI components in code; it does not automatically synchronize game data with them.
-- **Manual mode** is recommended for building large interfaces because it defers generated C# changes until you choose to apply them.
-- The public product name is **Advanced UI Toolkit**. The existing C# namespace remains `UICore` and the UPM identifier remains `com.uicore.framework` to preserve compatibility.
-- This repository/package does not currently include the proposed JSON UI Schema Builder, runtime MVVM framework, or universal UI system.
+## Samples and verification
 
-## License and contributions
+Framework includes documented [Weapon Panel](Packages/com.advanceduitoolkit.framework/Samples~/WeaponPanel/README.md), [Settings Panel](Packages/com.advanceduitoolkit.framework/Samples~/SettingsPanel/README.md), [Station Libraries](Packages/com.advanceduitoolkit.framework/Samples~/StationLibraries/README.md) and [Code Generation](Packages/com.advanceduitoolkit.framework/Samples~/CodeGeneration/README.md) samples. Authoring includes [JSON prefab-layout examples](Packages/com.advanceduitoolkit.authoring/Samples~/PrefabLayouts/README.md) and [optional EditMode tests](Packages/com.advanceduitoolkit.authoring/Tests~/README.md).
 
-A public open-source license has **not yet been selected or approved**. Before publishing the repository, confirm ownership rights and add an explicit `LICENSE` file. See the package's `PUBLICATION_CHECKLIST.md` for the review process.
+Run the static Framework package audit from the repository root:
 
----
+```sh
+python3 Packages/com.advanceduitoolkit.framework/Tools~/verify_package.py
+```
 
-**Advanced UI Toolkit — Create once. Bind automatically. Reuse everywhere.**
+This checks package structure and metadata. Unity compilation, the EditMode suite, scene workflows and player builds require Unity; a static audit does not establish those results. The testing guides describe the checks and current coverage.
+
+## Contributing and license
+
+See the [contribution guide](Packages/com.advanceduitoolkit.framework/CONTRIBUTING.md) for package boundaries, validation and issue reports. No `LICENSE` file is included in this source distribution.

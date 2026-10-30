@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "name": "Weapon Panel Integration",
+  "nodes": [
+    { "id": "panel", "kind": "container", "name": "WeaponPanel", "styleClass": "panel" },
+    { "id": "buttons", "parentId": "panel", "kind": "container", "name": "ButtonsParent", "styleClass": "buttons" },
+    { "id": "load", "parentId": "buttons", "kind": "button", "name": "BTN_Load", "text": "LOAD" },
+    { "id": "arm", "parentId": "buttons", "kind": "button", "name": "BTN_Arm", "text": "ARM" },
+    { "id": "fire", "parentId": "buttons", "kind": "button", "name": "BTN_Fire", "text": "FIRE" }
+  ]
+}

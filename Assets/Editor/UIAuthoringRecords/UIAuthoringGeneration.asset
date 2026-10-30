@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 252b857db9874433a5704748c1bfdfbb, type: 3}
+  m_Name: UIAuthoringGeneration
+  m_EditorClassIdentifier: AdvancedUIAuthoring.Integration.Editor::AdvancedUIAuthoring.Integration.Editor.UIAuthoringGenerationRecord
+  formatVersion: 1
+  recipe: {fileID: 11400000, guid: 676ceb6fb3e3bfc4cbf1cb976e54aed9, type: 2}
+  sceneGuid: 99c9720ab356a0642a771bea13969a05
+  parentObjectId: GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-620584536-0
+  capturedUtc: 2026-10-29T15:43:03.5528154Z
+  stylesheetHash: 0da542ac82f01e607fa2b207fa55f3f86ce8009a5ed798d38db0396d8500cdfe
+  profileHash: 2df083d7a25eae35d9ac0e8967bd9f6f742eb46b7703b355a04e28fe0803e05f
+  binderHash: 44f012634b0f07954f2c26f20da5910566ddc9efd385b1f3476999f42be11f0c
+  parentLayoutHash: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  nodes:
+  - id: panel
+    definition: '{"id":"panel","parentId":"","kind":"container","name":"WeaponPanel","text":"","style":{"width":0.0,"height":0.0,"background":"","textColor":"","fontSize":0,"layout":"","spacing":0.0,"padding":0,"textAlignment":"","anchor":"","pivotX":"","pivotY":"","positionX":"","positionY":"","minWidth":"","minHeight":"","flexibleWidth":"","flexibleHeight":"","childAlignment":"","childControlWidth":"","childControlHeight":"","childForceExpandWidth":"","childForceExpandHeight":"","paddingLeft":"","paddingRight":"","paddingTop":"","paddingBottom":"","gridColumns":"","cellWidth":"","cellHeight":""},"styleClass":"panel","styleClasses":[],"styleProperties":[]}'
+    sourceOrder: 0
+    objectId: GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-1050352161-0
+    parentObjectId: GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-620584536-0
+    sceneOrder: 3
+    sceneHash: 84fc5379b8f247335e65be0981709d13896455794a0586a8bdca775f4a5f775a
+    templateId: native:container
+    mappingHash: 2e17d1c4e6d61f23e2305c6c70f4b670f37109bd2e9e1d2a23b725f557eede0b
+  - id: buttons
+    definition: '{"id":"buttons","parentId":"panel","kind":"container","name":"ButtonsParent","text":"","style":{"width":0.0,"height":0.0,"background":"","textColor":"","fontSize":0,"layout":"","spacing":0.0,"padding":0,"textAlignment":"","anchor":"","pivotX":"","pivotY":"","positionX":"","positionY":"","minWidth":"","minHeight":"","flexibleWidth":"","flexibleHeight":"","childAlignment":"","childControlWidth":"","childControlHeight":"","childForceExpandWidth":"","childForceExpandHeight":"","paddingLeft":"","paddingRight":"","paddingTop":"","paddingBottom":"","gridColumns":"","cellWidth":"","cellHeight":""},"styleClass":"buttons","styleClasses":[],"styleProperties":[]}'
+    sourceOrder: 0
+    objectId: GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-670733912-0
+    parentObjectId: GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-1050352161-0
+    sceneOrder: 0
+    sceneHash: e80cce19817c9c7281120f1db5454f96427d1e75ecf58b3656b517b57c1076cc
+    templateId: native:container
+    mappingHash: 2e17d1c4e6d61f23e2305c6c70f4b670f37109bd2e9e1d2a23b725f557eede0b
+  - id: load
+    definition: '{"id":"load","parentId":"buttons","kind":"button","name":"BTN_Load","text":"LOAD","style":{"width":0.0,"height":0.0,"background":"","textColor":"","fontSize":0,"layout":"","spacing":0.0,"padding":0,"textAlignment":"","anchor":"","pivotX":"","pivotY":"","positionX":"","positionY":"","minWidth":"","minHeight":"","flexibleWidth":"","flexibleHeight":"","childAlignment":"","childControlWidth":"","childControlHeight":"","childForceExpandWidth":"","childForceExpandHeight":"","paddingLeft":"","paddingRight":"","paddingTop":"","paddingBottom":"","gridColumns":"","cellWidth":"","cellHeight":""},"styleClass":"flexible-control","styleClasses":[],"styleProperties":[]}'
+    sourceOrder: 0
+    objectId: GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-1321746381286301640-946327541
+    parentObjectId: GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-670733912-0
+    sceneOrder: 0
+    sceneHash: c9c4fd41091ffa484dc8a41c44722f14dc8faa7e51de4397539dde9baf8af50d
+    templateId: GlobalObjectId_V1-1-e4431a9039e0f1e4cae84ad359e46106-1321746381286301640-0
+    mappingHash: 6d908c0ab311b83f5f6c4d30d3c97bd67ecca1d7220b311324e49dbacaa14117
+  - id: arm
+    definition: '{"id":"arm","parentId":"buttons","kind":"button","name":"BTN_Arm","text":"ARM","style":{"width":0.0,"height":0.0,"background":"","textColor":"","fontSize":0,"layout":"","spacing":0.0,"padding":0,"textAlignment":"","anchor":"","pivotX":"","pivotY":"","positionX":"","positionY":"","minWidth":"","minHeight":"","flexibleWidth":"","flexibleHeight":"","childAlignment":"","childControlWidth":"","childControlHeight":"","childForceExpandWidth":"","childForceExpandHeight":"","paddingLeft":"","paddingRight":"","paddingTop":"","paddingBottom":"","gridColumns":"","cellWidth":"","cellHeight":""},"styleClass":"flexible-control","styleClasses":[],"styleProperties":[]}'
+    sourceOrder: 1
+    objectId: GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-1321746381286301640-1888065273
+    parentObjectId: GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-670733912-0
+    sceneOrder: 1
+    sceneHash: 10e08266b70aa7421882914009e4cc0a691fa04d2ef7e4d715b0b32ba32a6b42
+    templateId: GlobalObjectId_V1-1-e4431a9039e0f1e4cae84ad359e46106-1321746381286301640-0
+    mappingHash: 6d908c0ab311b83f5f6c4d30d3c97bd67ecca1d7220b311324e49dbacaa14117
+  - id: fire
+    definition: '{"id":"fire","parentId":"buttons","kind":"button","name":"BTN_Fire","text":"FIRE","style":{"width":0.0,"height":0.0,"background":"","textColor":"","fontSize":0,"layout":"","spacing":0.0,"padding":0,"textAlignment":"","anchor":"","pivotX":"","pivotY":"","positionX":"","positionY":"","minWidth":"","minHeight":"","flexibleWidth":"","flexibleHeight":"","childAlignment":"","childControlWidth":"","childControlHeight":"","childForceExpandWidth":"","childForceExpandHeight":"","paddingLeft":"","paddingRight":"","paddingTop":"","paddingBottom":"","gridColumns":"","cellWidth":"","cellHeight":""},"styleClass":"flexible-control","styleClasses":[],"styleProperties":[{"name":"flexible-width","value":"0"},{"name":"width","value":"160"}]}'
+    sourceOrder: 2
+    objectId: GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-1321746381286301640-1669288166
+    parentObjectId: GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-670733912-0
+    sceneOrder: 2
+    sceneHash: 0ec00d45ecaccdf0fff283b436da320b4e0a2d036f66be47eec489ba389dd25c
+    templateId: GlobalObjectId_V1-1-e4431a9039e0f1e4cae84ad359e46106-1321746381286301640-0
+    mappingHash: 6d908c0ab311b83f5f6c4d30d3c97bd67ecca1d7220b311324e49dbacaa14117

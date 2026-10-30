@@ -1,4 +1,6 @@
-# Headless Binder Integration — v1.1.4
+# Headless Binder Integration
+
+[Documentation index](INDEX.md)
 
 `AdvancedUIBindingIntegration` is an **Editor-only public API** for consumer packages. It uses the exact same Binder scanning, code-template generation, file safety, and serialized manifest implementation already used by the standalone Binder. It does not open a window or select objects.
 
@@ -64,7 +66,7 @@ Public statuses: `UpToDate`, `PendingChanges`, `PendingRemoval`, `Generated`, `S
 - No C# generation is included in Unity's hierarchy Undo transaction. Generated files and scene Undo must be treated as separate stages.
 - For registered roots, `GenerateBindings` works only with a saved generation profile and existing, unmodified generated source. It never takes over a hand-written script.
 - Avoid invoking from background threads or during Unity compilation/import/Play Mode transitions.
-- Does not register custom Binder component types; component extension points remain a separate future milestone.
+- Custom Binder component types are registered separately through the [component extensibility API](COMPONENT_EXTENSIBILITY_API.md).
 - This package does **not** ship Editor test or benchmark panels. Test in Unity 2022.3+ and use the native Unity Profiler.
 
 ## Acceptance checks in Unity

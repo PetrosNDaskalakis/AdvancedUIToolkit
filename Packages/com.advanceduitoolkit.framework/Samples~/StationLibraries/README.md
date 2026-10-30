@@ -18,14 +18,14 @@ Each must contain the expected Unity uGUI component on its root GameObject (e.g.
 
 Use **Assets > Create > Advanced UI Toolkit > Style Profile**, creating:
 
-```text
-MainMenuProfile  (no parent)
-BaseStationProfile
-├── SonarStationProfile   (BaseProfile = BaseStationProfile)
-└── WeaponsStationProfile (BaseProfile = BaseStationProfile)
-```
+| Profile | BaseProfile |
+| --- | --- |
+| MainMenuProfile | None |
+| BaseStationProfile | None |
+| SonarStationProfile | BaseStationProfile |
+| WeaponsStationProfile | BaseStationProfile |
 
-Open **Tools > Advanced UI Toolkit > Factory** and register component prefab templates per profile:
+Open **Tools > Advanced UI Toolkit > Library** and register component prefab templates per profile:
 
 | Profile | Button | Toggle | Panel |
 | --- | --- | --- | --- |
@@ -42,10 +42,10 @@ Expected result: the Sonar screen creates linked SonarButton instances while Wea
 
 ## Step 4: Bind by role, not visual style
 
-Rename one sonar button to `BTN_TrackTarget` and one weapons button to `BTN_Fire`. Use a `UIBindingRoot` on each screen, then Workspace > Bindings to generate **separate** classes. Both styles use standard Unity Button references.
+Rename one sonar button to `BTN_TrackTarget` and one weapons button to `BTN_Fire`. Use a `UIBindingRoot` on each screen, then Tools > Advanced UI Toolkit > Binder to generate **separate** classes. Both styles use standard Unity Button references.
 
 ## Step 5: Validate
 
-Check prefab links, inherited templates, unique names and generated reference ownership. Factory appearance is independent from the API consumed by gameplay scripts.
+Check prefab links, inherited templates, unique names and generated reference ownership. Library appearance is independent from the API consumed by gameplay scripts.
 
-**Important:** The style libraries do not inject game logic, and Advanced UI Toolkit does not yet support JSON schema generation or runtime CSS-like styling.
+Style libraries do not inject game logic or provide runtime CSS-like styling. The optional Authoring package provides Layouts and JSON compatibility tools alongside the Framework library.

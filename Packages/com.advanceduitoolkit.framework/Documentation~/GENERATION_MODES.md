@@ -1,5 +1,7 @@
 # Advanced UI Toolkit: Code Generation Modes
 
+[Documentation index](INDEX.md)
+
 Open **Tools > Advanced UI Toolkit > Binder > Show More > Automation**.
 
 ## Manual (recommended for large UI authoring sessions)

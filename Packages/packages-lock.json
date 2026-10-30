@@ -5,7 +5,8 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.unity.ugui": "1.0.0"
+        "com.unity.ugui": "1.0.0",
+        "com.advanceduitoolkit.framework": "1.2.0-preview.3"
       }
     },
     "com.advanceduitoolkit.framework": {

@@ -1,0 +1,255 @@
+{
+  "version": 1,
+  "name": "Advanced Layout Demo",
+  "tokens": [
+    {
+      "name": "--navy",
+      "value": "#192E42"
+    },
+    {
+      "name": "--cyan",
+      "value": "#33788C"
+    },
+    {
+      "name": "--red",
+      "value": "#AC514B"
+    },
+    {
+      "name": "--white",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "--gutter",
+      "value": "18"
+    }
+  ],
+  "classes": [
+    {
+      "name": "naval-panel",
+      "properties": [
+        {
+          "name": "width",
+          "value": "560"
+        },
+        {
+          "name": "height",
+          "value": "270"
+        },
+        {
+          "name": "anchor",
+          "value": "center"
+        },
+        {
+          "name": "pivot-x",
+          "value": "0.5"
+        },
+        {
+          "name": "pivot-y",
+          "value": "0.5"
+        },
+        {
+          "name": "position-x",
+          "value": "0"
+        },
+        {
+          "name": "position-y",
+          "value": "0"
+        },
+        {
+          "name": "background",
+          "value": "var(--navy)"
+        },
+        {
+          "name": "layout",
+          "value": "vertical"
+        },
+        {
+          "name": "child-alignment",
+          "value": "upper-left"
+        },
+        {
+          "name": "spacing",
+          "value": "var(--gutter)"
+        },
+        {
+          "name": "padding",
+          "value": "20"
+        },
+        {
+          "name": "padding-bottom",
+          "value": "12"
+        },
+        {
+          "name": "child-control-width",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "naval-heading",
+      "properties": [
+        {
+          "name": "width",
+          "value": "520"
+        },
+        {
+          "name": "height",
+          "value": "38"
+        },
+        {
+          "name": "text-color",
+          "value": "var(--white)"
+        },
+        {
+          "name": "font-size",
+          "value": "22"
+        },
+        {
+          "name": "text-align",
+          "value": "left"
+        },
+        {
+          "name": "min-height",
+          "value": "30"
+        }
+      ]
+    },
+    {
+      "name": "weapons-grid",
+      "properties": [
+        {
+          "name": "width",
+          "value": "520"
+        },
+        {
+          "name": "height",
+          "value": "110"
+        },
+        {
+          "name": "layout",
+          "value": "grid"
+        },
+        {
+          "name": "grid-columns",
+          "value": "3"
+        },
+        {
+          "name": "cell-width",
+          "value": "160"
+        },
+        {
+          "name": "cell-height",
+          "value": "48"
+        },
+        {
+          "name": "spacing",
+          "value": "9"
+        },
+        {
+          "name": "child-alignment",
+          "value": "upper-center"
+        },
+        {
+          "name": "padding-left",
+          "value": "4"
+        },
+        {
+          "name": "padding-top",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "name": "grid-button",
+      "properties": [
+        {
+          "name": "background",
+          "value": "var(--cyan)"
+        },
+        {
+          "name": "text-color",
+          "value": "var(--white)"
+        },
+        {
+          "name": "font-size",
+          "value": "17"
+        }
+      ]
+    },
+    {
+      "name": "danger-button",
+      "properties": [
+        {
+          "name": "background",
+          "value": "var(--red)"
+        }
+      ]
+    },
+    {
+      "name": "status",
+      "properties": [
+        {
+          "name": "width",
+          "value": "500"
+        },
+        {
+          "name": "height",
+          "value": "32"
+        },
+        {
+          "name": "text-color",
+          "value": "var(--white)"
+        },
+        {
+          "name": "text-align",
+          "value": "left"
+        },
+        {
+          "name": "font-size",
+          "value": "15"
+        },
+        {
+          "name": "flexible-width",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "name": "corner-marker",
+      "properties": [
+        {
+          "name": "width",
+          "value": "24"
+        },
+        {
+          "name": "height",
+          "value": "24"
+        },
+        {
+          "name": "anchor",
+          "value": "top-right"
+        },
+        {
+          "name": "pivot-x",
+          "value": "1"
+        },
+        {
+          "name": "pivot-y",
+          "value": "1"
+        },
+        {
+          "name": "position-x",
+          "value": "-30"
+        },
+        {
+          "name": "position-y",
+          "value": "-30"
+        },
+        {
+          "name": "background",
+          "value": "var(--cyan)"
+        }
+      ]
+    }
+  ]
+}

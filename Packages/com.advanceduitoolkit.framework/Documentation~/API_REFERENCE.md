@@ -1,8 +1,10 @@
 # API Reference
 
+[Documentation index](INDEX.md)
+
 [← README](../README.md) · [Architecture](ARCHITECTURE.md) · [Developer Handbook](DEVELOPER_HANDBOOK.md)
 
-This reference covers the **runtime API available in Advanced UI Toolkit `1.1.0-preview.2`**, based on the package's Runtime source. It does not include proposed JSON schemas or reactive data binding.
+This reference covers the runtime API in the supplied Framework package. Layouts and JSON authoring use Editor APIs documented by the Authoring package; reactive game-data binding is outside the runtime API.
 
 > **Namespace:** `AdvancedUIToolkit` · **Runtime assembly:** `AdvancedUIToolkit.Runtime` · **UPM package:** `com.advanceduitoolkit.framework`
 
@@ -35,7 +37,7 @@ The lookup key is the **generated property name**, not the prefixed GameObject n
 
 ### Manifest entry
 
-`UIBindingRoot.Entry` contains `Key`, `HierarchyKey`, `StableId`, `ComponentType`, and `Reference`. The Editor creates and validates entries; game code should normally use the generated binding class rather than edit entries manually.
+`UIBindingRoot.Entry` contains `Key`, `HierarchyKey`, `StableId`, `ComponentType`, `Reference`, and `XmlSummary`. The Editor creates and validates entries; game code should normally use the generated binding class rather than edit entries manually.
 
 ## `IUIBindings`
 
@@ -149,14 +151,14 @@ Current values: `TextLegacy`, `Button`, `Image`, `RawImage`, `Panel`, `Toggle`, 
 
 ## `UIStyleContext : MonoBehaviour`
 
-Optional root component whose `Profile` property identifies the style profile used by the Factory. The nearest ancestor context is considered when authoring child controls.
+Optional root component whose `Profile` property identifies the style profile used by the Library. The nearest ancestor context is considered when authoring child controls.
 
 ## Editor tools (not player API)
 
 | Entry point                                               | Purpose                                        |
 | --------------------------------------------------------- | ---------------------------------------------- |
 | **Tools → Advanced UI Toolkit → Binder**                  | Scan, review, preview, and generate bindings   |
-| **Tools → Advanced UI Toolkit → Factory**                 | Browse and instantiate reusable components     |
+| **Tools → Advanced UI Toolkit → Library**                 | Browse and instantiate reusable components     |
 | **GameObject → Advanced UI Toolkit → ...**                | Create configured, named standard uGUI objects |
 | **Assets → Create → Advanced UI Toolkit → Style Profile** | Create a profile asset                         |
 

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "name": "Weapon Panel Prefab Layout",
+  "nodes": [
+    { "id": "panel", "kind": "container", "name": "WeaponPanel", "styleClass": "panel" },
+    { "id": "buttons", "parentId": "panel", "kind": "container", "name": "ButtonsParent", "styleClass": "buttons" },
+    { "id": "load", "parentId": "buttons", "kind": "button", "name": "BTN_Load", "text": "LOAD", "styleClass": "flexible-control" },
+    { "id": "arm", "parentId": "buttons", "kind": "button", "name": "BTN_Arm", "text": "ARM", "styleClass": "flexible-control" },
+    { "id": "fire", "parentId": "buttons", "kind": "button", "name": "BTN_Fire", "text": "FIRE", "styleClass": "flexible-control",
+      "styleProperties": [ { "name": "flexible-width", "value": "0" }, { "name": "width", "value": "160" } ] }
+  ]
+}

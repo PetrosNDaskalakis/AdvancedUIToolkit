@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "name": "Naval Integration Layout",
+  "classes": [
+    { "name": "panel", "properties": [
+      { "name": "width", "value": "560" }, { "name": "height", "value": "120" },
+      { "name": "background", "value": "#122330" }, { "name": "anchor", "value": "center" },
+      { "name": "layout", "value": "vertical" }, { "name": "padding", "value": "20" },
+      { "name": "child-control-width", "value": "true" }, { "name": "child-control-height", "value": "true" }
+    ] },
+    { "name": "buttons", "properties": [
+      { "name": "height", "value": "64" }, { "name": "layout", "value": "grid" },
+      { "name": "grid-columns", "value": "3" }, { "name": "cell-width", "value": "160" },
+      { "name": "cell-height", "value": "48" }, { "name": "spacing", "value": "12" }
+    ] }
+  ]
+}

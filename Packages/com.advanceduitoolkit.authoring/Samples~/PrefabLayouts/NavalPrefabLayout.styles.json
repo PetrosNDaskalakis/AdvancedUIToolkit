@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "name": "Naval Prefab Root Layout",
+  "tokens": [ { "name": "--control-height", "value": "48" }, { "name": "--control-min-width", "value": "120" } ],
+  "classes": [
+    { "name": "panel", "properties": [
+      { "name": "width", "value": "620" }, { "name": "height", "value": "130" },
+      { "name": "background", "value": "#122330" }, { "name": "anchor", "value": "center" },
+      { "name": "layout", "value": "vertical" }, { "name": "padding", "value": "20" },
+      { "name": "child-control-width", "value": "true" }, { "name": "child-control-height", "value": "true" },
+      { "name": "child-force-expand-width", "value": "true" }
+    ] },
+    { "name": "buttons", "properties": [
+      { "name": "height", "value": "52" }, { "name": "layout", "value": "horizontal" },
+      { "name": "spacing", "value": "12" }, { "name": "child-control-width", "value": "true" },
+      { "name": "child-control-height", "value": "true" }
+    ] },
+    { "name": "control-base", "properties": [
+      { "name": "min-width", "value": "var(--control-min-width)" }, { "name": "height", "value": "var(--control-height)" }
+    ] },
+    { "name": "flexible-control", "extends": "control-base", "properties": [
+      { "name": "flexible-width", "value": "1" }
+    ] }
+  ]
+}

@@ -111,6 +111,20 @@ namespace AdvancedUIToolkit.Editor
             window.Focus();
         }
 
+        /// <summary>Open Binder for an explicit ordinary scene UI root without writing generation settings.</summary>
+        public static void OpenForTarget(GameObject root)
+        {
+            if (root == null || !UIHierarchySelection.IsSelectableContainer(root) ||
+                !root.scene.IsValid() || !root.scene.isLoaded)
+                throw new ArgumentException("Choose an ordinary scene UI container.", nameof(root));
+            var window = GetWindow<AdvancedUIToolkitWorkspaceWindow>("Binder");
+            window.EnsurePages();
+            window.binder.SetWorkspaceTarget(root);
+            window.actionMessage = null;
+            window.Show();
+            window.Focus();
+        }
+
         /// <summary>Initializes Editor listeners and docking constraints.</summary>
         private void OnEnable()
         {
@@ -237,6 +251,10 @@ namespace AdvancedUIToolkit.Editor
             EnsurePages();
             DrawToolbar();
             DrawRootSelector();
+            var mode = (AdvancedUIToolkitGenerationMode)EditorGUILayout.EnumPopup("Binding Generation",
+                AdvancedUIToolkitAutomationMonitor.GenerationMode);
+            if (mode != AdvancedUIToolkitAutomationMonitor.GenerationMode)
+                AdvancedUIToolkitAutomationMonitor.GenerationMode = mode;
             pageScroll = EditorGUILayout.BeginScrollView(pageScroll, GUILayout.ExpandHeight(true));
             if (binder.WorkspaceTarget != null)
             {
@@ -269,7 +287,7 @@ namespace AdvancedUIToolkit.Editor
             {
                 GUILayout.Label("Binder", EditorStyles.boldLabel);
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button("Factory", EditorStyles.toolbarButton, GUILayout.Width(64f)))
+                if (GUILayout.Button("Library", EditorStyles.toolbarButton, GUILayout.Width(64f)))
                     OpenFactoryForRoot();
                 if (GUILayout.Button(showAdvanced ? "Show Less" : "Show More",
                     EditorStyles.toolbarButton, GUILayout.Width(91f)))
@@ -552,7 +570,7 @@ namespace AdvancedUIToolkit.Editor
                 using (new EditorGUI.DisabledScope(!valid || !needsGeneration))
                 {
                     string caption = !configured ? "Generate Bindings" :
-                        "Generate " + pending + " Changes";
+                        "Update Bindings";
                     if (GUILayout.Button(caption, GUILayout.Height(29f)))
                     {
                         if (binder.GenerateWorkspaceSource())
@@ -584,7 +602,7 @@ namespace AdvancedUIToolkit.Editor
         /// </summary>
         private void OpenFactoryForRoot()
         {
-            GameObject selected = ResolveSelectedGameObject(Selection.activeGameObject);
+            GameObject selected = Selection.activeGameObject;
             RectTransform selectedRect = selected != null ? selected.GetComponent<RectTransform>() : null;
             RectTransform root = binder != null && binder.WorkspaceTarget != null
                 ? binder.WorkspaceTarget.GetComponent<RectTransform>() : null;

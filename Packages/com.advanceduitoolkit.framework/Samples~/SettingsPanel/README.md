@@ -1,23 +1,22 @@
 # Settings Panel — Controls (importable source sample)
 
-This sample demonstrates **one-way events from multiple standard uGUI control types** into an on-screen status label, using only the existing v0.9.8 runtime API. It is deliberately self-contained: **no JSON schema, no prefab assets, no prebuilt scene, and no generated game binding class required to compile the sample**.
+This sample demonstrates **one-way events from multiple standard uGUI control types** into an on-screen status label, using the Framework runtime API. It is deliberately self-contained: **no JSON schema, no prefab assets, no prebuilt scene, and no generated game binding class required to compile the sample**.
 
 ## Import and assemble
 
 1. In **Window > Package Manager > Advanced UI Toolkit > Samples**, import **Settings Panel — Controls**.
 2. Create a Canvas and Panel with `UIBindingRoot`, then add these direct/descendant controls (the named GameObject must contain the expected component):
 
-```text
-Canvas
-└── SettingsPanel  [UIBindingRoot, SettingsPanelExample]
-    ├── SLD_Volume       [Slider]
-    ├── TGL_Mute         [Toggle]
-    ├── INP_PlayerName   [legacy InputField]
-    ├── DDP_Quality      [legacy Dropdown]
-    └── TXT_Status       [legacy Text]
-```
+| Object | Parent | Components |
+| --- | --- | --- |
+| SettingsPanel | Canvas | UIBindingRoot, SettingsPanelExample |
+| SLD_Volume | SettingsPanel | Slider |
+| TGL_Mute | SettingsPanel | Toggle |
+| INP_PlayerName | SettingsPanel | Legacy InputField |
+| DDP_Quality | SettingsPanel | Legacy Dropdown |
+| TXT_Status | SettingsPanel | Legacy Text |
 
-3. For ease, create controls from **GameObject > Advanced UI Toolkit**. The Factory may use defaults from your selected station style profile, so verify the actual component type.
+3. For ease, create controls from **GameObject > Advanced UI Toolkit**. The Library may use defaults from your selected station style profile, so verify the actual component type.
 4. In Dropdown Inspector, add at least two options, e.g. `Low` and `High`, or leave the default options. Set Slider min/max to 0..1 for percentage formatting.
 5. Open **Tools > Advanced UI Toolkit > Binder**. Scan and **generate/save the root manifest** so all keys exist: `Volume`, `Mute`, `PlayerName`, `Quality`, `Status`.
 6. Attach imported `SettingsPanelExample` to the **same** root as `UIBindingRoot`.

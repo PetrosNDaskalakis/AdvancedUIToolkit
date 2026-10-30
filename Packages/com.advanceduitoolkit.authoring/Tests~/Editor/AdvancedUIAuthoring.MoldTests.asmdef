@@ -1,0 +1,16 @@
+{
+  "name": "AdvancedUIAuthoring.MoldTests",
+  "references": [
+    "AdvancedUIAuthoring.Integration.Editor",
+    "AdvancedUIToolkit.Runtime",
+    "UnityEngine.UI",
+    "AdvancedUIToolkit.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "autoReferenced": false
+}

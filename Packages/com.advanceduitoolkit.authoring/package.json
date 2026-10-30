@@ -1,0 +1,28 @@
+{
+  "name": "com.advanceduitoolkit.authoring",
+  "displayName": "Advanced UI Authoring",
+  "version": "0.5.0-preview.8",
+  "unity": "2022.3",
+  "description": "Mold-first layout wizard with direct hierarchy capture, saved mold reuse and retained JSON compatibility.",
+  "keywords": [
+    "unity",
+    "ugui",
+    "ui",
+    "authoring",
+    "json",
+    "schema",
+    "hierarchy",
+    "mold"
+  ],
+  "dependencies": {
+    "com.unity.ugui": "1.0.0",
+    "com.advanceduitoolkit.framework": "1.2.0-preview.3"
+  },
+  "samples": [
+    {
+      "displayName": "Prefab Layouts",
+      "description": "Create a weapon panel using your saved prefab profile.",
+      "path": "Samples~/PrefabLayouts"
+    }
+  ]
+}

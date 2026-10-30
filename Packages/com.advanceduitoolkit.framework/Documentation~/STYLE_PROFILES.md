@@ -1,17 +1,18 @@
 # Style profiles & reusable station libraries
 
-A style profile selects **which prefab** the Advanced UI Toolkit Factory uses for a control. It does not change the public component-reference API. Screens can look different while both expose `UI.Fire`, `UI.Volume`, etc.
+[Documentation index](INDEX.md)
+
+A style profile selects **which prefab** the Advanced UI Toolkit Library uses for a control. It does not change the public component-reference API. Screens can look different while both expose `UI.Fire`, `UI.Volume`, etc.
 
 ## Example hierarchy
 
-```text
-BaseStation (UIStyleProfile)
-├── SonarStation (inherits BaseStation)
-├── WeaponsStation (inherits BaseStation)
-└── NavigationStation (inherits BaseStation)
-
-MainMenu (independent UIStyleProfile)
-```
+| Profile | Base profile |
+| --- | --- |
+| BaseStation | None |
+| SonarStation | BaseStation |
+| WeaponsStation | BaseStation |
+| NavigationStation | BaseStation |
+| MainMenu | None |
 
 `BaseStation` might define a shared Toggle and Panel prefab. `SonarStation` can override only Button. Its effective set uses its own Button and inherits the rest.
 
@@ -19,15 +20,15 @@ MainMenu (independent UIStyleProfile)
 
 1. Build and save **real prefab assets** for your controls (e.g. `SonarButton.prefab`) under your game's `Assets/...` folder. Use Unity's Prefab workflow and normal uGUI components.
 2. Create a profile with **Assets > Create > Advanced UI Toolkit > Style Profile**. Name it `SonarStationProfile`.
-3. Open **Tools > Advanced UI Toolkit > Factory** and register your prefabs in the profile's component templates.
+3. Open **Tools > Advanced UI Toolkit > Library** and register your prefabs in the profile's component templates.
 4. Assign `SonarStationProfile` to a `UIStyleContext` on your Sonar station root.
-5. Select a `RectTransform` under that root and create a Button using the Factory or **GameObject > Advanced UI Toolkit > Button**.
+5. Select a `RectTransform` under that root and create a Button using the Library or **GameObject > Advanced UI Toolkit > Button**.
 6. Verify the created control is a **linked prefab instance** and its name follows `BTN_...`.
 7. Change the prefab asset and verify expected Unity prefab overrides/propagation.
 
 ## Parent profile reuse
 
-Create `BaseStationProfile`, add shared templates, then assign it as `BaseProfile` on `SonarStationProfile`. Derived template identities override base templates; custom templates are keyed by a custom ID, standard templates by component kind. Avoid inheritance cycles. The Editor should flag invalid profile configurations; test inherited results with the Factory.
+Create `BaseStationProfile`, add shared templates, then assign it as `BaseProfile` on `SonarStationProfile`. Derived template identities override base templates; custom templates are keyed by a custom ID, standard templates by component kind. Avoid inheritance cycles. The Editor should flag invalid profile configurations; test inherited results with the Library.
 
 ## What stays separate
 
@@ -47,6 +48,6 @@ For a step-by-step exercise import **Station Style Libraries** via Unity Package
 
 ## Composite prefab templates
 
-You can register a prefab with a `RectTransform` container at its root and the role's actual component on a child. For example, an `Image` profile entry can use `IMG_Icon` as the prefab instance name even when its only `Image` lives under `Graphic`. The Factory preserves the prefab link; Binder resolves a unique matching child and produces a typed `Image` accessor.
+You can register a prefab with a `RectTransform` container at its root and the role's actual component on a child. For example, an `Image` profile entry can use `IMG_Icon` as the prefab instance name even when its only `Image` lives under `Graphic`. The Library preserves the prefab link; Binder resolves a unique matching child and produces a typed `Image` accessor.
 
 If more than one matching component is present, Binder will ask you to clarify which one is intended. It does not silently choose the first child. The prefab must still contain a component matching its role somewhere in the hierarchy, and a nested independent `UIBindingRoot` is excluded from the parent's binding scope.

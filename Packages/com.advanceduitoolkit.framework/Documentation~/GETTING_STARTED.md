@@ -1,77 +1,46 @@
-# Getting started: first working UI
+# Framework getting started
 
-**Outcome:** a working `WeaponPanel` with three buttons; no manual Inspector button references.
+[Documentation index](INDEX.md) · [Developer handbook](DEVELOPER_HANDBOOK.md)
 
-## 1. Install the package
+## Create a reusable control library
 
-Open **Window > Package Manager**, use **+ > Add package from disk** and select Advanced UI Toolkit's `package.json`. In an embedded setup, the package should be at `YourProject/Packages/com.advanceduitoolkit.framework/` (not `Assets/AdvancedUIToolkit`). Verify the Console has no compile errors. `com.unity.ugui` must be present.
+1. Create a Canvas and an ordinary screen panel with a child RectTransform for controls.
+2. Build a uGUI Button and save it as a prefab under `Assets`.
+3. Choose **Assets → Create → Advanced UI Toolkit → Style Profile** and save a profile.
+4. Register the Button prefab in the profile's templates. Open **Tools → Advanced UI Toolkit → Library** and choose that profile.
+5. Set the target to your ordinary scene container. Use the Button template to create `BTN_Fire`.
 
-If you are migrating a pre-UPM install, use [Migration](MIGRATION_TO_ADVANCED_UI_TOOLKIT.md) first to retain Unity script `.meta` GUIDs. **Never delete an old script and add a new GUID-bearing script if existing scenes reference it.**
+Library keeps the source prefab link. Search and kind filters affect the displayed entries; **Show Inherited** controls whether inherited templates participate. Clear the filters if the expected entry is hidden. A manually assigned target stays pinned; use hierarchy following when you want selection changes to drive the target. Library does not silently substitute an ancestor for an invalid selected container.
 
-## 2. Build a hierarchy
+## Generate typed references
 
-Create a Canvas and a panel under it. Attach `UIBindingRoot` to the panel (the **screen root**). Create three Advanced UI Toolkit buttons under this root using **GameObject > Advanced UI Toolkit > Button**. Rename their root GameObjects precisely:
-
-```text
-Canvas
-└── WeaponPanel  [UIBindingRoot]
-    ├── BTN_Arm   [Button]
-    ├── BTN_Fire  [Button]
-    └── BTN_Load  [Button]
-```
-
-The prefixes identify component types. `BTN_` indicates `UnityEngine.UI.Button`. The component can live on the named GameObject or on **exactly one matching child** inside the same binding scope. For example, `IMG_Icon` may be a wrapper with a single `Image` child. If several matching children exist, name the intended child explicitly or move the component to the wrapper to remove ambiguity.
-
-## 3. Scan and generate
-
-Open **Tools > Advanced UI Toolkit > Binder** and select `WeaponPanel`. The component list and inline messages highlight naming or reference issues. Advanced UI Toolkit suggests `WeaponPanelBindings` by default for a new root. To customize its class name, namespace, output folder, or ExampleScript, expand **Show More > Generation settings & property names**. Click **Preview C#** for a read-only source preview, then **Generate Bindings** when ready.
-
-**Compile note:** saving a new `.cs` file triggers a Unity import/compilation. To avoid multiple interruptions, set **Binder > Show More > Automation & batch generation > Manual** while authoring, and generate when you are finished.
-
-## 4. Write a view
-
-Create `Assets/Scripts/WeaponPanel.cs`:
+1. Add `UIBindingRoot` to the screen root.
+2. Open **Tools → Advanced UI Toolkit → Binder** and select that root.
+3. Review discovery. `BTN_Fire` should resolve to a Button with generated property `Fire`.
+4. Configure class name `WeaponPanelBindings`, namespace `Game.UI.Generated` and an output directory under `Assets`.
+5. Preview C#, resolve reported issues and generate. Wait for Unity compilation.
+6. Create `WeaponPanel.cs` under `Assets` and attach the view to the same root:
 
 ```csharp
 using AdvancedUIToolkit;
-using UnityEngine;
 using Game.UI.Generated;
+using UnityEngine;
 
-/// <summary>Connects weapon buttons to gameplay actions.</summary>
 public sealed class WeaponPanel : UIView<WeaponPanelBindings>
 {
-    /// <summary>Registers listeners once; Advanced UI Toolkit owns their cleanup.</summary>
     protected override void OnInitialize()
     {
-        Events.BindClick(UI.Arm, Arm);
-        Events.BindClick(UI.Fire, Fire);
-        Events.BindClick(UI.Load, Load);
+        Events.BindClick(UI.Fire, OnFire);
     }
 
-    /// <summary>Handles Arm input.</summary>
-    private void Arm() => Debug.Log("Arm clicked", this);
-
-    /// <summary>Handles Fire input.</summary>
-    private void Fire() => Debug.Log("Fire clicked", this);
-
-    /// <summary>Handles Load input.</summary>
-    private void Load() => Debug.Log("Load clicked", this);
+    private void OnFire() => Debug.Log("Fire");
 }
 ```
 
-Attach `WeaponPanel` **to the same GameObject as** `UIBindingRoot`. No `Button` fields or manual button Inspector hookups are required. If `WeaponPanel.cs` belongs to your own asmdef assembly, that assembly must reference `AdvancedUIToolkit.Runtime`.
+In Play Mode, clicking Fire should log once. Disable and re-enable the view, then click again to check that listeners resume without duplication. See [Lifecycle](LIFECYCLE.md) for all hooks.
 
-## 5. Verify
+## Reuse the screen structure
 
-Enter Play Mode and click Arm, Fire, Load. Each should log once. Disable and re-enable the root GameObject: managed callbacks suspend and restore without being registered twice. `OnInitialize` is executed once; `OnViewEnabled` and `OnViewDisabled` can be overridden for repeated activation.
+Install Authoring and follow the [Layouts quick start](../../com.advanceduitoolkit.authoring/Documentation~/GETTING_STARTED.md). A mold captures eligible containers; add complete prefab controls with Library after creating the layout, then configure Binder for the new screen.
 
-## 6. Optional imported source-only sample
-
-Import **Weapon Panel — Buttons** from **Package Manager > Advanced UI Toolkit > Samples**. It contains self-contained C# classes (`WeaponPanelExample` and `ScreenBindingsSample`) that compile without first running code generation, **but require you to perform the scan above to populate their registry**. Those files are demonstrations; production UIs should use the generated class.
-
-## Next steps
-
-- [Developer handbook](DEVELOPER_HANDBOOK.md) — automation and diagnostics.
-- [Style profiles](STYLE_PROFILES.md) — separate station appearance.
-- [Custom code templates](CUSTOM_CODE_TEMPLATES.md) — code layout and XML comments.
-- [Troubleshooting](TROUBLESHOOTING.md) — compiler errors and failed lookups.
+Use [Manual generation](GENERATION_MODES.md) for long authoring sessions so you can review and write binding changes together.

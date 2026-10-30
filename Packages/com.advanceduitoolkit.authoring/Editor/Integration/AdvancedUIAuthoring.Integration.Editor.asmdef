@@ -1,0 +1,9 @@
+{
+  "name": "AdvancedUIAuthoring.Integration.Editor",
+  "rootNamespace": "AdvancedUIAuthoring.Integration.Editor",
+  "references": ["AdvancedUIAuthoring.Editor", "AdvancedUIToolkit.Editor", "AdvancedUIToolkit.Runtime", "UnityEngine.UI"],
+  "includePlatforms": ["Editor"],
+  "autoReferenced": true,
+  "allowUnsafeCode": false,
+  "noEngineReferences": false
+}

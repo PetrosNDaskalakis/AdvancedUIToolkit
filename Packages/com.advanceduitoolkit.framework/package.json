@@ -1,6 +1,6 @@
 {
   "name": "com.advanceduitoolkit.framework",
-  "version": "1.1.5",
+  "version": "1.2.0-preview.3",
   "displayName": "Advanced UI Toolkit",
   "description": "Portable Unity uGUI authoring framework with extensible Editor-only component registrations, public batch creation and headless binding APIs.",
   "unity": "2022.3",
@@ -17,12 +17,12 @@
   },
   "samples": [
     {
-      "displayName": "Weapon Panel — Buttons",
+      "displayName": "Weapon Panel \u2014 Buttons",
       "description": "Beginner walkthrough for a three-button panel and typed bindings.",
       "path": "Samples~/WeaponPanel"
     },
     {
-      "displayName": "Settings Panel — Controls",
+      "displayName": "Settings Panel \u2014 Controls",
       "description": "Working sample for toggle, slider, input field, dropdown, and status text with managed events.",
       "path": "Samples~/SettingsPanel"
     },

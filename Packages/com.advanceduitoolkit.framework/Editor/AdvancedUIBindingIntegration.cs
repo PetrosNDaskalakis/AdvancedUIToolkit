@@ -58,6 +58,12 @@ namespace AdvancedUIToolkit.Editor
     /// </summary>
     public static class AdvancedUIBindingIntegration
     {
+        /// <summary>Whether the existing automation monitor may write safe binding changes.</summary>
+        public static bool AutomaticGenerationEnabled
+        {
+            get { return AdvancedUIToolkitAutomationMonitor.GenerationMode == AdvancedUIToolkitGenerationMode.Automatic; }
+        }
+
         /// <summary>
         /// Prevents background Automatic Generation while an external package modifies
         /// a UI hierarchy. The outermost Dispose queues one debounced refresh.

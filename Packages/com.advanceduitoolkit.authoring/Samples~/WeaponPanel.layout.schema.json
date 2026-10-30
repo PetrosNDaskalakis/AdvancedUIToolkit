@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "name": "Anchored Naval Panel — Layout Demo",
+  "nodes": [
+    {
+      "id": "panel",
+      "kind": "container",
+      "name": "WeaponPanel",
+      "styleClass": "naval-panel"
+    },
+    {
+      "id": "heading",
+      "parentId": "panel",
+      "kind": "text",
+      "name": "TXT_Heading",
+      "text": "TACTICAL SYSTEMS",
+      "styleClass": "naval-heading"
+    },
+    {
+      "id": "buttons",
+      "parentId": "panel",
+      "kind": "container",
+      "name": "ButtonsGrid",
+      "styleClass": "weapons-grid"
+    },
+    {
+      "id": "load",
+      "parentId": "buttons",
+      "kind": "button",
+      "name": "BTN_Load",
+      "text": "LOAD",
+      "styleClass": "grid-button"
+    },
+    {
+      "id": "arm",
+      "parentId": "buttons",
+      "kind": "button",
+      "name": "BTN_Arm",
+      "text": "ARM",
+      "styleClass": "grid-button"
+    },
+    {
+      "id": "fire",
+      "parentId": "buttons",
+      "kind": "button",
+      "name": "BTN_Fire",
+      "text": "FIRE",
+      "styleClass": "grid-button",
+      "styleClasses": [
+        "danger-button"
+      ]
+    },
+    {
+      "id": "status",
+      "parentId": "panel",
+      "kind": "text",
+      "name": "TXT_Status",
+      "text": "SYSTEM OPERATIONAL",
+      "styleClass": "status"
+    },
+    {
+      "id": "marker",
+      "kind": "image",
+      "name": "CornerMarker",
+      "styleClass": "corner-marker"
+    }
+  ]
+}

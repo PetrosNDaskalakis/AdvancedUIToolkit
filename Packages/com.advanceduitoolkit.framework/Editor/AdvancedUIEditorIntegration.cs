@@ -84,6 +84,13 @@ namespace AdvancedUIToolkit.Editor
     /// </summary>
     public static class AdvancedUIEditorIntegration
     {
+        /// <summary>Check an exact editable scene UI parent without substituting an ancestor or changing selection.</summary>
+        public static bool IsValidCreationParent(RectTransform parent)
+        {
+            return parent != null && UIHierarchySelection.IsSelectableContainer(parent.gameObject) &&
+                parent.gameObject.scene.IsValid() && parent.gameObject.scene.isLoaded;
+        }
+
         /// <summary>Resolves a template from an explicit profile and its inherited profiles.</summary>
         /// <param name="profile">Source profile asset.</param>
         /// <param name="kind">Standard kind, or Custom for a custom template ID.</param>

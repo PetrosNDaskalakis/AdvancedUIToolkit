@@ -1,6 +1,8 @@
 # Custom binding code templates
 
-The Binding Workspace supports optional **compilable C# examples** for controlling the shape and formatting of generated binding scripts. No third-party parsing packages are needed.
+[Documentation index](INDEX.md)
+
+Binder supports optional **compilable C# examples** for controlling the shape and formatting of generated binding scripts. No third-party parsing packages are needed.
 
 ## Create a template
 
@@ -54,7 +56,7 @@ For `BTN_Fire`, it will generate a documented `Button Fire` property and the cor
 
 The template must compile normally as a C# class before being used. A helper method in the template can be copied into generated code, but the template itself also remains in the project. Avoid non-static dependencies on generated members within the original template. For complex formats beyond two insertion points, extend the template engine rather than depending on fragile text replacement.
 
-## v0.9.6: Custom XML documentation
+## Custom XML documentation
 
 Optionally add the following **single-line C# comment** to your `ExampleScript.cs`, before the properties marker:
 
@@ -63,6 +65,6 @@ Optionally add the following **single-line C# comment** to your `ExampleScript.c
 // <ADVANCEDUITOOLKIT:PROPERTIES>
 ```
 
-Available placeholders: `{name}` (generated C# property), `{hierarchy}` (name-derived binding key), and `{type}` (fully qualified Unity component type). XML-special characters in descriptions are escaped automatically. Use the directive at most once. Without it, the old v0.9.5 property documentation format remains unchanged.
+Available placeholders: `{name}` (generated C# property), `{hierarchy}` (name-derived binding key), and `{type}` (fully qualified Unity component type). XML-special characters in descriptions are escaped automatically. Use the directive at most once. Without it, the default property documentation format is used.
 
-You can review proposed output using **Binder > Preview Generated C#** without writing source code or triggering a Unity compile. Template edits require manual regeneration to keep the old generation safety checks intact.
+You can review proposed output using **Binder > Preview Generated C#** without writing source code or triggering a Unity compile. Template edits require manual regeneration to keep generation safety checks intact.

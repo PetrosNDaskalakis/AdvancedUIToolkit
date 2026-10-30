@@ -1,4 +1,6 @@
-# Component extensibility — v1.1.5
+# Component extensibility
+
+[Documentation index](INDEX.md)
 
 Advanced UI Toolkit can now accept user-defined **Editor-registered binding component prefixes** without changing its Runtime assembly or built-in naming rules. The API is in `AdvancedUIToolkit.Editor` and requires an Editor assembly reference to `AdvancedUIToolkit.Editor`. The custom component itself must be in a runtime-accessible assembly referenced by the generated code's assembly.
 
@@ -25,7 +27,7 @@ public static class CustomBindingRegistration
 
 `RadarDisplay` is an example of a **public Component in a runtime assembly**, not a type supplied by this package. A GameObject named `RAD_Contacts` containing exactly one `RadarDisplay` on itself or a uniquely matching descendant becomes a binding candidate. Its generated type is `RadarDisplay`'s fully qualified C# type and the generated property is `Contacts`. Existing name prefixes retain their mappings. External types must be public, concrete, nonnested and nongeneric so the generator can emit a valid C# type name.
 
-Registration is in-memory, per Editor domain. Re-register in `[InitializeOnLoad]` or `[InitializeOnLoadMethod]`; the same mapping can be registered repeatedly. Prefixes are case-sensitive, 2–8 characters, ASCII uppercase letters/digits, beginning with a letter; collisions are rejected. There is **no unregistration method** in v1.1.5, to prevent accidental accessors disappearing in automatic generation.
+Registration is in-memory, per Editor domain. Re-register in `[InitializeOnLoad]` or `[InitializeOnLoadMethod]`; the same mapping can be registered repeatedly. Prefixes are case-sensitive, 2–8 characters, ASCII uppercase letters/digits, beginning with a letter; collisions are rejected. There is **no unregistration method**, to prevent accidental accessors disappearing in automatic generation.
 
 The framework does not automatically add external component types or assembly references to the consuming gameplay assembly. If generated bindings compile in an assembly definition, that asmdef must reference the assembly defining the custom Component. Editor-only Components must not be registered. Binder, diagnostics, nested binding scopes and reserved property names still enforce the existing rules. If the external package is removed, its `RAD_` mapping is no longer available and existing generated C# must be migrated deliberately.
 

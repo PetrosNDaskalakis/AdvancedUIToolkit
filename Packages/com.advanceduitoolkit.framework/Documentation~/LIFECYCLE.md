@@ -1,4 +1,6 @@
-# Advanced UI Toolkit v0.9.3 — Lifecycle reference
+# Lifecycle reference
+
+[Documentation index](INDEX.md)
 
 This document describes the lifecycle of `UIView<TBindings>` and events managed by `UIEventScope`.
 
@@ -87,4 +89,4 @@ those same handlers without reinitializing the view. Normal `MonoBehaviour` feat
 3. Destroy and recreate the panel; confirm no old callbacks continue firing and inspect Console for exceptions.
 4. Repeat after pooling/reusing a panel, with and without TMP installed when relevant.
 
-The compact Preview 11 distribution contains no bundled EditMode or PlayMode test assemblies.
+The compact Framework package contains no bundled EditMode or PlayMode test assemblies. See [Testing](TESTING.md).
