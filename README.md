@@ -1,5 +1,8 @@
 # Advanced UI Toolkit
 
+<img width="1254" height="1254" alt="Advanced UI Toolkit Logo" src="https://github.com/user-attachments/assets/e7bf8a6f-3c06-4e41-8f4e-69041e63eaa2" />
+
+
 Build reusable Unity uGUI screens with prefab libraries, reusable container layouts and generated C# bindings.
 
 Advanced UI Toolkit keeps visual authoring in Unity. **Library** places your saved control prefabs, **Layouts** captures and recreates container structures, and **Binder** connects those controls to typed gameplay code.
