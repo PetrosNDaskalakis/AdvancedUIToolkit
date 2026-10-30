@@ -86,14 +86,6 @@ JSON layouts, stylesheets and integration records remain available under **Tools
 
 Framework includes documented [Weapon Panel](Packages/com.advanceduitoolkit.framework/Samples~/WeaponPanel/README.md), [Settings Panel](Packages/com.advanceduitoolkit.framework/Samples~/SettingsPanel/README.md), [Station Libraries](Packages/com.advanceduitoolkit.framework/Samples~/StationLibraries/README.md) and [Code Generation](Packages/com.advanceduitoolkit.framework/Samples~/CodeGeneration/README.md) samples. Authoring includes [JSON prefab-layout examples](Packages/com.advanceduitoolkit.authoring/Samples~/PrefabLayouts/README.md) and [optional EditMode tests](Packages/com.advanceduitoolkit.authoring/Tests~/README.md).
 
-Run the static Framework package audit from the repository root:
-
-```sh
-python3 Packages/com.advanceduitoolkit.framework/Tools~/verify_package.py
-```
-
-This checks package structure and metadata. Unity compilation, the EditMode suite, scene workflows and player builds require Unity; a static audit does not establish those results. The testing guides describe the checks and current coverage.
-
 ## Contributing and license
 
 See the [contribution guide](Packages/com.advanceduitoolkit.framework/CONTRIBUTING.md) for package boundaries, validation and issue reports. No `LICENSE` file is included in this source distribution.
