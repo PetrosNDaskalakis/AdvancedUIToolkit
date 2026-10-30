@@ -84,7 +84,7 @@ JSON layouts, stylesheets and integration records remain available under **Tools
 
 ## Samples and verification
 
-Framework includes documented [Weapon Panel](Packages/com.advanceduitoolkit.framework/Samples~/WeaponPanel/README.md), [Settings Panel](Packages/com.advanceduitoolkit.framework/Samples~/SettingsPanel/README.md), [Station Libraries](Packages/com.advanceduitoolkit.framework/Samples~/StationLibraries/README.md) and [Code Generation](Packages/com.advanceduitoolkit.framework/Samples~/CodeGeneration/README.md) samples. Authoring includes [JSON prefab-layout examples](Packages/com.advanceduitoolkit.authoring/Samples~/PrefabLayouts/README.md) and [optional EditMode tests](Packages/com.advanceduitoolkit.authoring/Tests~/README.md).
+Framework includes documented [Weapon Panel](Packages/com.advanceduitoolkit.framework/Samples~/WeaponPanel/README.md), [Settings Panel](Packages/com.advanceduitoolkit.framework/Samples~/SettingsPanel/README.md), [Station Libraries](Packages/com.advanceduitoolkit.framework/Samples~/StationLibraries/README.md) and [Code Generation](Packages/com.advanceduitoolkit.framework/Samples~/CodeGeneration/README.md) samples. Authoring includes [JSON prefab-layout examples](Packages/com.advanceduitoolkit.authoring/Samples~/PrefabLayouts/README.md).
 
 ## Contributing and license
 
